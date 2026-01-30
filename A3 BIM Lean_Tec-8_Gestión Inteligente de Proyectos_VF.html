@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — TEC-6</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* Responsive layout (screen) */
+    html, body { height: 100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      /* En portal con iframe: evitamos scroll global y usamos scroll por columna */
+      overflow:hidden;
+    }
+
+    .sheet{
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: 18px;
+      margin: 0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      align-items:flex-start;
+      gap:16px;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      justify-self:stretch;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr; /* PLAN | DO | ACT */
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .topbar{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;      /* scroll dentro de cada columna */
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{
+      border:1px solid var(--soft);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left: 18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:64px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    .riskrow{
+      display:flex;            /* más robusto que grid (evita traslapes) */
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:10px;
+    }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;          /* bloque fijo para que el texto no invada */
+      line-height: 1;          /* evita que el emoji “empuje” */
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      /* A3 landscape only for printing */
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        max-width: none;
+        min-height: auto;
+        padding: 10mm;
+        margin:0;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow: visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- TOP BAR / ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">TEC-8</div>
+        <div class="subtitle">
+          Gestión inteligente de proyectos — Asistente IA (Agente) + Data Fabric mínimo sobre CDE Distriluz para seguimiento semanal e informes con citas/anexos.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">CDE: Distriluz (lectura)</span>
+          <span class="chip">MVP: RAG + plantillas</span>
+          <span class="chip">Presupuesto: S/. 600,000.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-03-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-12-11</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- GRID: 3 columnas -->
+    <div class="grid">
+
+      <!-- PLAN (P) -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Implementar un <b>Agente IA</b> (MVP) que opere como <b>data fabric</b> mínimo sobre el CDE Distriluz para apoyar a gestores de proyectos en:
+              (1) <b>pendientes semanales</b> por proyecto/contrato/gestor exportables a Excel, y (2) <b>borradores</b> de informes contractuales con
+              <b>citas obligatorias</b> a evidencia del CDE (ID/ruta/versión) y anexos.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Información crítica existe en el CDE pero <b>dispersa y poco estandarizada</b>.</li>
+              <li>Gestores usan Excel personal → <b>duplicidad</b>, baja trazabilidad y difícil consolidación semanal.</li>
+              <li>Armar antecedentes y anexos consume tiempo (búsqueda/selección) y reduce oportunidad de control.</li>
+              <li>La IA sin organización de datos falla → se requiere <b>clasificación + metadatos + evidencia</b> (data fabric).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
+            <ul>
+              <li><b>Trabajo semanal:</b> búsqueda manual + consolidación (Excel) + armado de borradores.</li>
+              <li><b>Trazabilidad:</b> evidencias no siempre quedan referenciadas por ID/ruta/versión del CDE.</li>
+              <li><b>Riesgo:</b> inconsistencias entre gestores y dificultad para auditoría interna.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP):</b> conector de lectura al CDE (metadata + contenido), catálogo documental + clasificación automática,
+              pendientes semanales exportables a Excel, plantillas estandarizadas para 4 informes (conformidades, pagos, penalidades, reporte situacional),
+              generación de borradores con <b>antecedentes</b> y <b>citas/anexos</b>, seguridad RBAC alineada al CDE + auditoría de uso.</p>
+            <p><b>OUT (MVP):</b> emisión oficial/firma/aprobación automática (solo borradores), escritura directa al CDE,
+              integración total con ERP/finanzas/legal, entrenamiento de LLM desde cero (se usa RAG + plantillas; ajuste fino opcional).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM (responsable funcional y gobierno de información).</li>
+              <li><b>A:</b> GCPPI (aprueba/acepta).</li>
+              <li><b>C:</b> TIC (seguridad, accesos, arquitectura) · Logística (insumos de procesos/soportes).</li>
+              <li><b>I:</b> GR y GG.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li><b>API:</b> extracción por lotes + incremental + cache para controlar costo/uso de API del CDE.</li>
+              <li><b>Cobertura progresiva:</b> iniciar con repositorios priorizados (Top 20%) y escalar por oleadas.</li>
+              <li><b>Citas obligatorias:</b> se bloquea respuesta/borrador sin evidencia rastreable del CDE.</li>
+              <li><b>OCR:</b> solo para documentos prioritarios (25% escaneados estimados) por costo/tiempo.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO (D) -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
+            <ul>
+              <li><b>Indexación:</b> leer documentos del CDE (PDF/DOCX/XLSX) + metadatos; extracción incremental.</li>
+              <li><b>Data fabric mínimo:</b> catálogo con clasificación y metadatos derivados (proyecto, contrato, proveedor, semana, hito).</li>
+              <li><b>RAG + plantillas:</b> Q&A y generación de borradores con citas obligatorias (ID/ruta/versión).</li>
+              <li><b>Interfaz web:</b> chat + panel (pendientes, borradores, anexos, export Excel).</li>
+              <li><b>Seguridad:</b> RBAC alineado al CDE + auditoría de uso (quién consultó, qué fuentes se usaron).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧱</span>Arquitectura (alto nivel)</h3>
+            <ul>
+              <li><b>Conector CDE:</b> batch + incremental + cache (cuotas + reporte de consumo).</li>
+              <li><b>Pipeline:</b> extracción → normalización → chunking → embeddings → <b>vector DB</b> + índice de metadatos.</li>
+              <li><b>Servicios:</b> API de consultas, motor de plantillas, gestor de anexos/citas, auditoría.</li>
+              <li><b>Modelos:</b> LLM vía API o self-hosted (decisión con TIC) + guardrails (bloqueo sin evidencia).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Agente IA (web): chat + panel (pendientes, borradores, anexos, export).</li>
+              <li>Conector de lectura al CDE + catálogo documental (data fabric mínimo).</li>
+              <li>Clasificación automática + metadatos derivados por reglas/ML (taxonomía mínima).</li>
+              <li>Plantillas v1 (estructura común) para: conformidades, pagos, penalidades, reporte situacional.</li>
+              <li>RAG con citas obligatorias (ID/ruta/versión) + auditoría de consultas.</li>
+              <li>Hardening: control de costos API, monitoreo/observabilidad, seguridad RBAC.</li>
+              <li>Documentación + capacitación + acta UAT + puesta en producción.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance, criterios de aceptación, taxonomía mínima, arquitectura objetivo (con TIC).</td>
+                  <td class="w-fecha">26-03-16 → 26-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>Elaboración TDR (requisitos, seguridad, pruebas, operación, KPIs, criterios de éxito).</td>
+                  <td class="w-fecha">26-03-30 → 26-04-24</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Proceso de contratación (Logística + TIC + BIM + GCPPI).</td>
+                  <td class="w-fecha">26-04-27 → 26-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación de información (paralela): inventario repos, muestreo calidad, lista priorizada (Top 20%).</td>
+                  <td class="w-fecha">26-04-27 → 26-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Ejecución contractual (MVP): accesos→indexación→plantillas→pendientes/borradores→hardening→UAT→go-live.</td>
+                  <td class="w-fecha">26-09-28 → 26-12-11</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">
+              Hitos sugeridos (ejecución): S1–2 accesos/arquitectura/taxonomía · S3–4 indexación+clasificación+plantillas v1 ·
+              S5–6 pendientes+borradores v1 con citas · S7–8 hardening/control costos API · S9–10 UAT+capacitaciones+producción.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Presupuesto asignado:</b> <b>S/. 600,000.00</b> (incluye todos los gastos del MVP).</li>
+              <li><b>Modelo de adquisición:</b> contratación de proveedor (servicio) con TDR; aceptación por pruebas de usuario.</li>
+              <li><b>Componentes:</b> conector/API CDE (uso), vector DB, servicio LLM (API o self-hosted), compute/storage/monitoreo/backups, DevOps/observabilidad.</li>
+            </ul>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Desarrollo e implementación (incl. QA/UAT)</td><td><b>65%</b></td><td><b>390,000</b></td></tr>
+                <tr><td>Ingeniería de datos + catálogo/clasificación</td><td><b>15%</b></td><td><b>90,000</b></td></tr>
+                <tr><td>Infra + seguridad + observabilidad</td><td><b>12%</b></td><td><b>72,000</b></td></tr>
+                <tr><td>Capacitación + gestión del cambio + documentación</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
+                <tr><td>Contingencia (OCR/variabilidad/ajustes)</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Costos recurrentes post-MVP: infra (cloud/on-prem), consumo API CDE, consumo LLM (si aplica). Se define rango mensual tras inventario.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Recursos y roles (MVP)</h3>
+            <ul>
+              <li><b>Proveedor:</b> Arquitecto, Data Engineer, ML/LLM Engineer, Full-stack, QA.</li>
+              <li><b>Contraparte:</b> BIM (R) · GCPPI (A) · TIC (C) · Logística (C).</li>
+              <li><b>Usuarios piloto:</b> gestores de proyectos/contratos (validación de pendientes y borradores).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📣</span>Comunicaciones (cadencia + canales)</h3>
+            <ul>
+              <li><b>Semanal:</b> comité operativo (BIM + Proveedor + TIC) — avances, costos API, backlog.</li>
+              <li><b>Quincenal:</b> comité de decisión (GCPPI + BIM + TIC + Logística) — desbloqueos y cambios.</li>
+              <li><b>Canales:</b> CDE (fuentes oficiales), repos Git (código/config), tablero de issues, actas y CR.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT (C/A) -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos (resumen)</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Datos no estandarizados / dispersos</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: taxonomía mínima + clasificación automática + normalización incremental por oleadas.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Costo/uso de API Autodesk</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: batch + incremental + cache + cuotas + reporte de consumo; priorización por repos críticos.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>PDF escaneados</b> (OCR costoso/lento) (Media/Media).</p>
+                <p class="hint">Mitigación: OCR solo prioritarios; muestreo y reglas de selección.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Alucinaciones</b> / respuestas sin sustento (Media/Alta).</p>
+                <p class="hint">Mitigación: RAG + citas obligatorias + umbral de confianza + bloqueo sin evidencia.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Infra on-prem vs cloud</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: diseño híbrido + decisión temprana con TIC; pruebas de dimensionamiento en S1–2.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Baja adopción</b> (hábitos Excel) (Media/Media).</p>
+                <p class="hint">Mitigación: export Excel desde MVP + champions + quick wins (pendientes semanales).</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs del MVP)</h3>
+            <ul>
+              <li><b>KPI1 Ahorro tiempo por gestor:</b> <b>3–6 h/semana</b> (según #contratos).</li>
+              <li><b>KPI2 Calidad borradores:</b> ≥ <b>70%</b> aceptados con ≤ <b>20%</b> de edición.</li>
+              <li><b>KPI3 Relevancia pendientes:</b> ≥ <b>80%</b> validados como relevantes por usuarios piloto.</li>
+              <li><b>KPI4 Seguridad:</b> <b>0 hallazgos críticos</b> (RBAC + auditoría operativa).</li>
+              <li><b>KPI5 Control de costos API:</b> consumo dentro de cuota definida + reporte semanal de consumo.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (calidad, seguridad y costos)</h3>
+            <ul>
+              <li><b>Calidad RAG:</b> pruebas de precisión con set de preguntas; bloqueo sin evidencia; muestreo de citas.</li>
+              <li><b>Plantillas:</b> revisión legal/contratos de estructura (solo borradores) + checklist de completitud.</li>
+              <li><b>Seguridad:</b> pruebas RBAC (equivalencia con CDE), registro de auditoría, pentest/VA según TIC.</li>
+              <li><b>Costos:</b> tablero de consumo API/LLM; alarmas; límites por repositorio/oleada.</li>
+              <li><b>UAT:</b> pilotos con gestores; registro de feedback; acta de aceptación.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Indexación operativa de repositorios priorizados (Top 20%) con extracción incremental y cache.</li>
+              <li>Catálogo documental con clasificación y metadatos derivados (proyecto/contrato/proveedor/semana/hito).</li>
+              <li>Pendientes semanales exportables a Excel por proyecto/contrato/gestor.</li>
+              <li>Generación de borradores (4 tipos) con sección <b>Antecedentes</b> + <b>citas/anexos</b> (ID/ruta/versión del CDE).</li>
+              <li>Bloqueo de respuestas sin evidencia + auditoría de uso (usuario/fecha/fuentes).</li>
+              <li>RBAC equivalente al CDE y 0 hallazgos críticos de seguridad en validación TIC.</li>
+              <li>UAT aprobado por GCPPI con KPIs mínimos alcanzados o plan de remediación aceptado.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
+            <ul>
+              <li>Escalar cobertura por oleadas (nuevos repos/contratos) con control de costos.</li>
+              <li>Agregar escritura al CDE y firma/aprobación (fase siguiente) bajo controles de gobierno.</li>
+              <li>Integraciones (ERP/finanzas/legal) según priorización de valor y viabilidad TIC.</li>
+              <li>Optimización de OCR y reglas de selección; evaluación de modelos (API vs self-hosted).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: TIC + Logística · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-03-16 · Objetivo: 2026-12-11</div>
+    </div>
+
+  </div>
+</body>
+</html>

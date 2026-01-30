@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — TEC-7</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* Responsive layout (screen) */
+    html, body { height: 100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      /* En portal con iframe: evitamos scroll global y usamos scroll por columna */
+      overflow:hidden;
+    }
+
+    .sheet{
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: 18px;
+      margin: 0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      align-items:flex-start;
+      gap:16px;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      justify-self:stretch;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr; /* PLAN | DO | ACT */
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .topbar{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;      /* scroll dentro de cada columna */
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{
+      border:1px solid var(--soft);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left: 18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:64px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height: 1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      /* A3 landscape only for printing */
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        max-width: none;
+        min-height: auto;
+        padding: 10mm;
+        margin:0;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow: visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- TOP BAR / ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">TEC-7</div>
+        <div class="subtitle">
+          Integración CDE y GIS — Smallworld Electric Office: activos + ubicación + datos técnicos + <b>hipervínculos</b> al expediente del proyecto en CDE (as-built, planos, memorias, manuales, actas, etc.).
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">CDE: Autodesk SaaS (lectura)</span>
+          <span class="chip">GIS: Smallworld Electric Office</span>
+          <span class="chip">MVP: dataset + links + export BIM→GIS</span>
+          <span class="chip">Presupuesto: S/. 70,192.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · Técnica · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-03-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-12-11</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- GRID: 3 columnas -->
+    <div class="grid">
+
+      <!-- PLAN (P) -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Agilizar y anticipar (desde diseño y durante obra) el <b>registro en Smallworld Electric Office</b> de proyectos ejecutados por GCPPI,
+              integrando <b>activos + ubicación + datos técnicos</b> y agregando <b>hipervínculos persistentes</b> al <b>expediente del proyecto</b> en el CDE
+              (entregables/as-built, planos, memorias, manuales, actas, protocolos, etc.) para que O&M pueda operar y mantener los activos con evidencia.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>La carga GIS se completa al final → <b>retrabajo</b>, demoras y <b>pérdida de trazabilidad</b>.</li>
+              <li>El valor para O&M no es “tener el activo”, sino tener el activo con su <b>expediente accesible</b> (documentación del proyecto).</li>
+              <li>Sin estándar de links/metadatos, la documentación se vuelve difícil de encontrar y mantener por versiones.</li>
+              <li>Estandarizar y automatizar desde diseño reduce riesgos operativos y acelera el <b>handover</b> hacia O&M.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
+            <ul>
+              <li><b>Momento de carga:</b> mayormente al cierre del proyecto, con cortes tardíos.</li>
+              <li><b>Documentación:</b> entregables existen, pero su vínculo con cada activo no queda sistematizado en GIS.</li>
+              <li><b>Riesgo:</b> links inconsistentes, permisos/SSO, cambios de rutas y falta de versión del documento.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP):</b> dataset estándar GIS (tablas) con ID activo, geometría/coordenadas, atributos técnicos mínimos y campos de hipervínculo (URL/ID/ruta/versión) al CDE;
+              organización mínima del CDE para links consistentes (estructura + metadatos mínimos por tipo de entregable);
+              automatización BIM→tablas GIS (Dynamo/Python) exportando a CSV/XLSX (según consumo actual) con cortes por hito;
+              ajuste controlado de tablas existentes en Smallworld y del script/proceso de carga para registrar/actualizar hipervínculos.</p>
+            <p><b>OUT (MVP):</b> integración final por servicio/ETL sin cortes por fase (se deja diseñada para fase siguiente);
+              cambios masivos de gobierno de documentos fuera de repos priorizados; ampliación a todos los tipos de activos/proyectos sin CR.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM (parámetros/metadata y validación del export; gobierno de info).</li>
+              <li><b>A:</b> GCPPI (aprueba/acepta; prioriza proyectos piloto).</li>
+              <li><b>C:</b> TIC (SSO/permisos/ambientes) · Técnica (modelo activos GIS, pruebas de carga/operación) · Logística (contratación).</li>
+              <li><b>I:</b> GR y GG.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>MVP se limita a <b>1–2 proyectos piloto</b> y tipos de activos prioritarios (presupuesto acotado).</li>
+              <li>Cortes por hito aceptados en MVP (viabilidad/consistencia/inicio/fin) con reglas claras.</li>
+              <li>Links al CDE deberán ser <b>no públicos</b> y operar con <b>SSO</b> (definición TIC).</li>
+              <li>Persistencia del enlace: se define estándar (ID/ruta/versión) para evitar roturas por cambios de carpeta.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO (D) -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
+            <ul>
+              <li><b>Dataset GIS estándar:</b> tablas con activos + geometría + atributos mínimos + campos de links (URL/ID/ruta/versión) al CDE.</li>
+              <li><b>CDE listo para links:</b> estructura mínima por tipo de entregable (as-built/planos/memorias/manuales/actas/protocolos) + metadatos mínimos.</li>
+              <li><b>Automatización BIM→GIS:</b> Dynamo/Python exporta a CSV/XLSX con validadores de calidad y reglas por hito.</li>
+              <li><b>Smallworld:</b> ajuste controlado de tablas + script/proceso de carga para graficar y registrar/actualizar hipervínculos.</li>
+              <li><b>Roadmap:</b> diseñar integración final (servicio/ETL incremental) para proyectos asincrónicos sin cortes por fase.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📐</span>Estándar de enlace (CDE→GIS)</h3>
+            <ul>
+              <li><b>Identificador:</b> cada link debe almacenar <b>ID</b> (si aplica) + <b>ruta</b> + <b>versión</b> del documento en CDE.</li>
+              <li><b>Permisos:</b> links no públicos; acceso por SSO/roles (definición TIC) y pruebas con perfiles reales.</li>
+              <li><b>Metadatos mínimos:</b> tipo entregable, disciplina, hito, fecha, estado, versión.</li>
+              <li><b>Validación:</b> checker de link (resolución + permisos) y reporte de roturas antes de carga GIS.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Dataset estándar GIS (tablas) con activos + geometría + atributos mínimos + campos de links al CDE.</li>
+              <li>Propuesta de actualización controlada de tablas Smallworld (o tabla de links) + script/proceso de carga ajustado.</li>
+              <li>Automatización BIM→tablas GIS (Dynamo/Python) + validadores de calidad + reglas por hito.</li>
+              <li>Organización mínima del CDE (estructura y metadatos mínimos) para links consistentes.</li>
+              <li>Piloto E2E (1–2 proyectos) + pruebas + guía operativa + acta UAT.</li>
+              <li>Roadmap y diseño de fase 2: integración final incremental por servicio/ETL.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance: dataset, estándar de link, criterios de éxito y piloto (1–2 proyectos).</td>
+                  <td class="w-fecha">26-03-16 → 26-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>Elaboración TDR: requisitos Smallworld, export BIM, seguridad TIC, pruebas y operación.</td>
+                  <td class="w-fecha">26-03-30 → 26-04-24</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Proceso de contratación (Logística + TIC + BIM + Técnica + GCPPI).</td>
+                  <td class="w-fecha">26-04-27 → 26-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación de información: levantamiento Smallworld (tablas/flujo), prueba links CDE, mapeo de atributos.</td>
+                  <td class="w-fecha">26-04-27 → 26-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Ejecución contractual (MVP): dataset+export+ajustes GIS+pIloto E2E+hardening+guía+roadmap fase 2.</td>
+                  <td class="w-fecha">26-09-28 → 26-12-11</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">
+              Hitos sugeridos (ejecución): S1–2 levantamiento Smallworld + dataset + prueba links · S3–5 export BIM→tablas + validadores + reglas metadatos ·
+              S6–8 ajuste script/proceso GIS + update tablas + piloto E2E · S9–10 hardening + guía operativa + roadmap integración final.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Presupuesto total del servicio:</b> <b>S/. 70,192.00</b>.</li>
+              <li><b>Adquisición crítica:</b> horas de consultoría <b>Smallworld/ETL</b> (incluida en el servicio) + transferencia de conocimiento.</li>
+              <li><b>Herramientas ETL:</b> opcional solo si existe costo-cero; se evita en MVP si no está disponible.</li>
+            </ul>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Integración GIS (Smallworld) + actualización tablas + ajuste script/proceso</td><td><b>40%</b></td><td><b>28,077</b></td></tr>
+                <tr><td>Automatización BIM→Tablas (Dynamo/Python) + validadores + mapeo atributos</td><td><b>30%</b></td><td><b>21,058</b></td></tr>
+                <tr><td>QA E2E + piloto + documentación operativa</td><td><b>15%</b></td><td><b>10,529</b></td></tr>
+                <tr><td>Gestión/coord. + talleres (BIM–Técnica–TIC) + adopción mínima</td><td><b>10%</b></td><td><b>7,019</b></td></tr>
+                <tr><td>Contingencia técnica (permisos links, ajustes modelo, edge cases)</td><td><b>5%</b></td><td><b>3,509</b></td></tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Nota: distribución prioriza riesgo Smallworld y cambios controlados en tablas existentes.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Recursos y roles (MVP)</h3>
+            <ul>
+              <li><b>Proveedor:</b> Dev Dynamo/Python + especialista Smallworld/ETL + QA.</li>
+              <li><b>Contraparte:</b> BIM (R), Técnica (C), TIC (C), GCPPI (A), Logística (C).</li>
+              <li><b>Piloto:</b> 1–2 proyectos (activos prioritarios) con validación operativa O&M/Técnica.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📣</span>Comunicaciones (cadencia + canales)</h3>
+            <ul>
+              <li><b>Semanal:</b> comité operativo (BIM + Técnica + Proveedor + TIC) — avances, bloqueos, calidad de export y links.</li>
+              <li><b>Quincenal:</b> comité de decisión (GCPPI + BIM + TIC + Logística) — cambios y aceptación de hitos.</li>
+              <li><b>Canales:</b> CDE (expedientes), repos Git (scripts/validadores), actas, tablero issues y CR.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT (C/A) -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos (top) y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Cambios en tablas Smallworld afectan integridad</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: extensión mínima (tabla de links o campos controlados), plan de pruebas y rollback. Dueño: Técnica + TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>No hay especialista Smallworld/ETL disponible internamente</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: incluir especialista en el servicio + transferencia de conocimiento. Dueño: GCPPI.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Links CDE no persistentes o choques de permisos</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: estándar de enlace con TIC (SSO, no públicos) + pruebas con perfiles reales. Dueño: TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Metadatos BIM incompletos (IDs/atributos)</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: parámetros mínimos + validación automática en export; checklist por hito. Dueño: BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Proyectos asincrónicos</b> (Alta/Media).</p>
+                <p class="hint">Mitigación: MVP por hitos; roadmap a actualización incremental por servicio. Dueño: GCPPI.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Presupuesto acotado</b> (Alta/Media).</p>
+                <p class="hint">Mitigación: limitar MVP a 1–2 proyectos y activos prioritarios; dejar fase 2 diseñada. Dueño: GCPPI.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs del MVP)</h3>
+            <ul>
+              <li><b>KPI1 Cobertura links válidos (%):</b> ≥ <b>80%</b> de activos del piloto con hipervínculo válido al expediente en CDE.</li>
+              <li><b>KPI2 Tiempo de carga GIS:</b> reducción (baseline vs MVP) del tiempo de registro y vinculación documental.</li>
+              <li><b>KPI3 Completitud técnica (%):</b> ≥ <b>90%</b> de registros con campos técnicos mínimos completos en el piloto.</li>
+              <li><b>KPI4 Rotura de links (%):</b> tasa de links inválidos tras carga ≤ <b>5%</b> (con reporte y corrección).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (calidad y operación)</h3>
+            <ul>
+              <li><b>Pruebas Smallworld:</b> ambiente de pruebas + plan de rollback; verificación de integridad de tablas y graficación.</li>
+              <li><b>Validadores export BIM:</b> IDs/atributos mínimos + reporte de faltantes antes de carga.</li>
+              <li><b>Prueba de links:</b> resolución + permisos SSO con perfiles reales (TIC) + verificación de versión/ruta.</li>
+              <li><b>Piloto E2E:</b> 1–2 proyectos; muestreo de activos y trazabilidad a expediente (O&M/Técnica).</li>
+              <li><b>UAT:</b> criterios de aceptación y acta firmada por GCPPI (A).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Dataset GIS estándar implementado (tablas/campos) incluyendo hipervínculos (URL/ID/ruta/versión) al CDE.</li>
+              <li>Automatización BIM→tablas GIS operativa con validadores y reglas por hito (cortes definidos).</li>
+              <li>Proceso/script de carga Smallworld ajustado para registrar/actualizar hipervínculos sin romper integridad (pruebas + rollback).</li>
+              <li>Piloto E2E con KPIs mínimos: ≥80% links válidos y ≥90% completitud técnica.</li>
+              <li>Guía operativa + transferencia de conocimiento (incluye componente Smallworld/ETL).</li>
+              <li>Roadmap fase 2 documentado para integración incremental por servicio/ETL (sin cortes por fase).</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
+            <ul>
+              <li>Implementar integración final por servicio/ETL incremental (elimina dependencia de cortes por hito/fase).</li>
+              <li>Escalar a más proyectos/tipos de activos por oleadas, priorizando criticidad operativa.</li>
+              <li>Mejorar persistencia de links (estrategia por IDs) y robustecer gobernanza de metadatos.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Técnica + TIC · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-03-16 · Objetivo: 2026-12-11</div>
+    </div>
+
+  </div>
+</body>
+</html>

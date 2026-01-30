@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — TEC-4</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* Responsive layout (screen) */
+    html, body { height: 100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      /* En portal con iframe: evitamos scroll global y usamos scroll por columna */
+      overflow:hidden;
+    }
+
+    .sheet{
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: 18px;
+      margin: 0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      align-items:flex-start;
+      gap:16px;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      justify-self:stretch;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr; /* PLAN | DO | ACT */
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .topbar{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{
+      border:1px solid var(--soft);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left: 18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:64px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height: 1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      /* A3 landscape only for printing */
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        max-width: none;
+        min-height: auto;
+        padding: 10mm;
+        margin:0;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow: visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- TOP BAR / ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">TEC-4</div>
+        <div class="subtitle">
+          Automatizar el modelado 3D de redes — Optimizar y robustecer demo <b>Dynamo + Python</b> para generar modelo 3D parametrizado de redes <b>MT/BT aéreas</b> (rural/urbano) + <b>Alumbrado Público</b> desde tablas Excel con control de calidad.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Tecnología: Revit · Dynamo · Python</span>
+          <span class="chip">MVP: Robustecimiento de scripts + pre-check</span>
+          <span class="chip">Ruta: scripts → pre-addin → add-in</span>
+          <span class="chip">Presupuesto: S/. 70,192.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Técnica · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-02-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-11-27</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- GRID: 3 columnas -->
+    <div class="grid">
+
+      <!-- PLAN (P) -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Optimizar y robustecer el demo existente (Dynamo + Python) para que la empresa pueda generar, de forma <b>repetible</b> y con <b>precisión alta</b>,
+              un modelo 3D <b>parametrizado</b> de redes <b>MT/BT aéreas</b> (rural/urbano) incluyendo <b>alumbrado público</b>, desde tablas estructuradas (Excel),
+              reduciendo dependencia del mercado de modeladores especializados y elevando la calidad para usos BIM posteriores.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li><b>Brecha del mercado:</b> escasez de especialistas que produzcan BIM de redes con calidad consistente.</li>
+              <li><b>Riesgo actual:</b> modelos deficientes (sin parámetros, inconsistentes, no explotables) → retrabajo y demoras de aprobación.</li>
+              <li><b>Estrategia:</b> estandarizar el modelado por <b>datos</b> (Excel) con validación automática y reglas corporativas.</li>
+              <li><b>Impacto:</b> acelera revisiones y habilita que BIM de otras áreas apoye redes con menor curva.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
+            <ul>
+              <li>Existe un <b>demo</b> Dynamo/Python (no productizado) con variabilidad de resultados y sin robustecimiento.</li>
+              <li>Calidad depende del modelador/consultor y del Excel de entrada (no estandarizado).</li>
+              <li>Faltan: <b>validador</b> (pre-check), logs, manejo de errores, configuración por proyecto y control de versiones.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP):</b> modelo 3D parametrizado (postes, armados, cimentaciones, conductores y elementos asociados + parámetros corporativos);
+              plantilla Excel v1 + validador (bloquea datos incompletos/erróneos);
+              robustecimiento del script (estabilidad/performance/errores/logs/configuración multi-proyecto);
+              paquetización para uso controlado (pre-addin) + base de migración a add-in;
+              pilotos MT/BT/AP (urbano/rural) con validación de Técnica;
+              roadmap a add-in (fase 2).</p>
+            <p><b>OUT (MVP):</b> normalización completa de librería de armados/materiales (otro servicio, prerrequisito);
+              desarrollo del add-in completo (.NET/instalador/firma/control acceso) (se deja base + roadmap);
+              automatización corporativa como servicio (fase futura).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🔗</span>Prerrequisitos / dependencias</h3>
+            <ul>
+              <li><b>Librería corporativa</b> de materiales/armados disponible y actualizada (control de versiones).</li>
+              <li><b>Estándares BIM</b> y CDE actualizados (parámetros obligatorios, nomenclatura, entregables).</li>
+              <li>Entorno de pruebas Revit/Dynamo con versiones definidas (TIC).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM.</li>
+              <li><b>A:</b> GCPPI.</li>
+              <li><b>C:</b> TIC · Técnica · Logística.</li>
+              <li><b>I:</b> GR · GG.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO (D) -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
+            <ul>
+              <li><b>robustecimiento:</b> refactor, estabilidad, performance, manejo de errores, logs y configuración por proyecto.</li>
+              <li><b>Excel v1 + pre-check:</b> plantilla estandarizada + validador (reglas, obligatoriedad, unidades) que bloquea datos inválidos.</li>
+              <li><b>Modelo parametrizado:</b> inserción/actualización de postes, armados, cimentaciones, conductores y AP + parámetros corporativos.</li>
+              <li><b>Paquetización:</b> estructura “pre-addin” (controlada) lista para migración a add-in compilado.</li>
+              <li><b>Pilotos:</b> casos representativos MT/BT (urbano/rural) + AP con validación de Técnica.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Script Dynamo/Python optimizado (robustecimiento) con logs, manejo de errores y configuración multi-proyecto.</li>
+              <li>Plantilla Excel v1 + diccionario de parámetros v1 + validador (pre-check) con reporte de fallas.</li>
+              <li>Paquete “pre-addin” versionado (repo Git + releases) + documentación técnica/operativa.</li>
+              <li>Pilotos E2E (MT/BT/AP) + reporte de precisión/tiempos + ajustes por feedback.</li>
+              <li>Roadmap fase 2 (Add-in .NET): estimación, controles de uso, firma, despliegue interno.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance: requisitos, precisión, plantilla Excel v1 y reglas de validación; decisión versiones Revit/Dynamo.</td>
+                  <td class="w-fecha">26-02-02 → 26-03-06</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>Elaboración TDR (incluye cesión total, seguridad, control de uso, pruebas, entregables).</td>
+                  <td class="w-fecha">26-03-09 → 26-03-31</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Proceso de contratación (Logística + TIC + BIM + Técnica + GCPPI).</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación: librería disponible, casos piloto, reglas por activos, inventario de Excel consultores.</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Ejecución contractual (MVP): diagnóstico→robustecimiento→pre-check→paquetización→pilotos→cierre→roadmap add-in.</td>
+                  <td class="w-fecha">26-09-07 → 26-11-27</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">
+              Hitos (ejecución): S1–2 diagnóstico + plantilla v1 + reglas precisión · S3–5 robustecimiento + logs + multi-proyecto ·
+              S6–8 paquetización (pre-addin) + documentación · S9–10 pilotos + ajustes · S11–12 cierre + roadmap add-in.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Presupuesto total del servicio:</b> <b>S/. 70,192.00</b>.</li>
+              <li><b>Requisitos contractuales clave:</b> <b>cesión total</b> del código + derechos perpetuos + prohibición de reutilización por terceros + confidencialidad.</li>
+              <li><b>Repositorio corporativo:</b> Git para versionado y entrega del código fuente (por cesión total) + releases.</li>
+            </ul>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Optimización/robustecimiento de scripts (Dynamo/Python) + multi-proyecto + performance</td><td><b>38%</b></td><td><b>26,673</b></td></tr>
+                <tr><td>Plantilla Excel v1 + diccionario parámetros v1 + validador (pre-check)</td><td><b>22%</b></td><td><b>15,442</b></td></tr>
+                <tr><td>Paquetización + versionado + documentación + base para migración a Add-in</td><td><b>18%</b></td><td><b>12,634</b></td></tr>
+                <tr><td>Pilotos + QA + ajustes por feedback (Técnica/BIM)</td><td><b>17%</b></td><td><b>11,932</b></td></tr>
+                <tr><td>Contingencia técnica</td><td><b>5%</b></td><td><b>3,511</b></td></tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Nota: el Add-in completo (.NET/instalador/firma/controles) se plantea como fase 2; este PD deja la base y roadmap.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Recursos y roles (MVP)</h3>
+            <ul>
+              <li><b>Proveedor:</b> Dev Dynamo/Python · Especialista BIM (QA/estándares) · QA funcional (regresión/logs).</li>
+              <li><b>Técnica:</b> valida reglas y precisión; define sistema de coordenadas y tolerancias.</li>
+              <li><b>TIC:</b> lineamientos de seguridad, repositorio, empaquetización, despliegue interno.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🔒</span>Control de propiedad intelectual y restricción de uso</h3>
+            <ul>
+              <li><b>MVP:</b> entrega código fuente (cesión total) + documentación + paquetización “pre-addin”.</li>
+              <li><b>Fase 2 (Add-in):</b> lógica compilada (.NET) que solo ejecute en equipos corporativos (dominio/usuario/SSO), con firma digital, instalador interno, logs y control de versiones.</li>
+              <li><b>Operación típica:</b> consultor entrega Excel bajo plantilla; la empresa ejecuta el motor y genera el modelo estándar (consultor no recibe el motor).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT (C/A) -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos (top) y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Librería/armados no actualizados</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: declarar prerrequisito; trabajar con subconjunto disponible; control de versiones. Dueño: Técnica + BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Sistema de coordenadas “por definir”</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: definir en alcance (UTM/WGS84, datum, zona, unidades, tolerancias) y parametrizar conversión en script. Dueño: Técnica.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Variabilidad del Excel por consultores</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: plantilla v1 + validadores + guía; rechazo automático de datos incompletos. Dueño: BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Compatibilidad Revit/Dynamo (versiones)</b> (Media/Media).</p>
+                <p class="hint">Mitigación: versiones soportadas + pruebas; empaquetar por versión; documentación. Dueño: TIC + BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Propiedad intelectual y control de uso</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: cesión total + distribución controlada + ruta a add-in compilado y firmado con control de acceso. Dueño: GCPPI + TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Uso masivo sin soporte</b> (Media/Media).</p>
+                <p class="hint">Mitigación: manual + capacitación corta + protocolo de soporte; logs para diagnóstico. Dueño: GCPPI.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs del MVP)</h3>
+            <ul>
+              <li><b>KPI1 Completitud parámetros (%):</b> ≥ <b>80%</b> de elementos del piloto con parámetros obligatorios completos.</li>
+              <li><b>KPI2 Productividad (%):</b> ≥ <b>30%</b> de reducción de tiempo de producción vs procedimiento manual (en piloto).</li>
+              <li><b>KPI3 Robustez:</b> <b>0 fallas críticas</b> por datos inválidos (pre-check bloquea entradas).</li>
+              <li><b>KPI4 Calidad de salida:</b> disminución de observaciones por inconsistencias / parámetros faltantes (medida en piloto).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (calidad y precisión)</h3>
+            <ul>
+              <li><b>Pre-check:</b> set de casos inválidos (unidades/IDs/tolerancias) para asegurar bloqueo y reporte claro.</li>
+              <li><b>Regresión:</b> pruebas repetibles por versión Revit/Dynamo; validación de performance y logs.</li>
+              <li><b>Precisión:</b> tramo piloto con Técnica: tolerancias, coordenadas, alineamiento y consistencia de armados.</li>
+              <li><b>Pilotos:</b> MT/BT (urbano/rural) + AP; comparación de tiempos y calidad vs baseline.</li>
+              <li><b>UAT:</b> criterios de aceptación + acta de cierre del MVP.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Plantilla Excel v1 + diccionario de parámetros y validador (pre-check) operativos; bloqueo de entradas inválidas con reporte.</li>
+              <li>Robustecimiento de scripts con logs, manejo de errores y configuración multi-proyecto; ejecución estable en versiones soportadas.</li>
+              <li>Generación/actualización de modelo 3D parametrizado MT/BT/AP en pilotos representativos (urbano/rural) con validación Técnica.</li>
+              <li>Paquete “pre-addin” versionado (Git + releases) + documentación técnica/operativa entregada (cesión total).</li>
+              <li>KPIs mínimos alcanzados o plan de remediación aceptado (productividad, completitud, 0 fallas críticas).</li>
+              <li>Roadmap fase 2 (Add-in) con alcance, controles de acceso y estimación documentados.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧭</span>Pendiente por definir (sin frenar el PD)</h3>
+            <p><b>Sistema de coordenadas:</b> incorporar como actividad temprana (definición + prueba en tramo piloto). El script debe parametrizar: datum, zona, unidades y tolerancias, para evitar que el MVP se “amarre” a una decisión tardía.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
+            <ul>
+              <li>Migrar a <b>Add-in</b> compilado (fase 2) con controles de uso, firma digital, instalador interno y telemetría/logs.</li>
+              <li>Escalar cobertura de librería/armados y estandarización de materiales (servicio dependiente).</li>
+              <li>Evolucionar a automatización corporativa (servicio) si se justifica por volumen.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Técnica + TIC · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-02-16 · Objetivo: 2026-11-27</div>
+    </div>
+
+  </div>
+</body>
+</html>

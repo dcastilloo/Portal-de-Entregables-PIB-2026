@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — TEC-5</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* Responsive layout (screen) */
+    html, body { height: 100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      /* En portal con iframe: evitamos scroll global y usamos scroll por columna */
+      overflow:hidden;
+    }
+
+    .sheet{
+      width: 100%;
+      max-width: none;           /* ocupa todo el ancho del iframe */
+      height: 100%;              /* se adapta al alto disponible */
+      min-height: 100vh;         /* fallback */
+      box-sizing: border-box;
+      padding: 18px;
+      margin: 0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr; /* 50% + 50% */
+      align-items:flex-start;
+      gap:16px;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2mm;
+      min-width: 0;
+    }
+
+    .title{
+      font-size: 18pt;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .subtitle{
+      font-size: 10pt;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:2.5mm 6mm;
+      width: 100%;
+      justify-self: stretch;
+      align-self: start;
+    }
+
+    .kv{
+      display:flex;
+      gap:2mm;
+      align-items:baseline;
+      white-space: nowrap;
+    }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:2mm;
+      margin-top:2mm;
+    }
+    .chip{
+      padding:1.2mm 2.2mm;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr; /* PLAN | DO | ACT */
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    /* Stack on smaller screens */
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Stack on smaller screens */
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height: 0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan  .colhead{ background: var(--p); }
+    .do    .colhead{ background: var(--d); }
+    .check .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;  /* "slider"/scroll dentro de cada columna */
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars (visibles) */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{
+      border:1px solid var(--soft);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .sec h3{
+      margin:0 0 2mm 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:2mm;
+    }
+
+    .sec h3 .ico{ width:5mm; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{
+      margin:0;
+      font-size:9pt;
+      line-height:1.25;
+      color:#1b1b1b;
+    }
+    .sec ul{
+      margin:0;
+      padding-left: 4.5mm;
+    }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:1.5mm 1.6mm; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:22mm; }
+    .tbl .w-fecha{ width:34mm; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    .riskrow{
+      display:grid;
+      grid-template-columns: 18mm 1fr;
+      gap:2.5mm;
+      align-items:start;
+      margin-bottom:2mm;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:1mm 2mm;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    /* Editable blocks */
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 3mm;
+    }
+
+    .printnote{
+      margin-top:3mm;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:6mm;
+    }
+
+    @media print{
+      /* A3 landscape only for printing */
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        max-width: none;
+        min-height: auto;
+        padding: 10mm;
+        margin:0;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow: visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- TOP BAR / ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">TEC-5</div>
+        <div class="subtitle">
+          Dashboard de Seguimiento de Inversiones (Planificado vs Real) desde ACC/BIM360 (Reviews) + Power BI + Vista 3D
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">PO: PMO / Portafolio</span>
+          <span class="chip">CDE: ACC/BIM360 (Reviews)</span>
+          <span class="chip">Cutover: 2026-08-10</span>
+          <span class="chip">MVP: Refresh semanal (diario selectivo)</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-02-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-11-27</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid">
+
+      <!-- PLAN (P) -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Demostrar con un <b>MVP</b> que es posible capturar el <b>Real</b> de inversiones desde el <b>CDE</b> con trazabilidad (aprobación + evidencia),
+              habilitando actualización <b>casi en tiempo real</b> (según refresh) y reduciendo significativamente el tiempo de consolidación del reporte,
+              para mejorar la toma de decisiones del portafolio.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Seguimiento actual depende de exportaciones y consolidación manual en Excel → <b>riesgo de error</b> y <b>reproceso</b>.</li>
+              <li>El “Real” vive en app + Excel sin estándar único → <b>baja trazabilidad</b> y auditoría limitada.</li>
+              <li>Se requiere gestión por excepción: atrasos y desviaciones económicas con <b>fuente única confiable</b>.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
+            <ul>
+              <li><b>Baseline:</b> consolidación manual (Excel), alta variabilidad entre proyectos.</li>
+              <li><b>Dolor principal:</b> tiempo para preparar reporte + correcciones por inconsistencias.</li>
+              <li><b>Fuentes:</b> ACC/BIM360 (Reviews) + archivos Excel + evidencias dispersas.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP):</b> Dashboard Power BI (portafolio + proyecto) con Plan vs Real (hitos y pagos), BD Portafolio mínima,
+              ETL ACC→BD con logs, Excel planificado controlado + ETL, filtro IGV, link a vista 3D por proyecto, documentación y Pruebas.</p>
+            <p><b>OUT (MVP):</b> UI completa de administración de usuarios/maestros (se deja ruta de escalamiento), integraciones fuera de Reviews,
+              automatización con campos personalizados ACC (no disponible), ampliaciones de alcance sin CR.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧾</span>Proyectos en alcance (reglas)</h3>
+            <ul>
+              <li><b>Incluye:</b> proyectos PIB 2026 con ACC activo, workflow de Reviews operativo, vista 3D definida y compromiso de captura desde <b>cutover 2026-08-10</b>.</li>
+              <li><b>Excluye:</b> <b>multi-iniciativa</b> o estructura no 1:1 hasta saneamiento y consolidación (evita distorsión de KPIs).</li>
+              <li><b>Salida:</b> “Listado final en alcance” (Excel controlado/versionado) con links ACC/3D y semáforo de saneamiento.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Clientes / interesados clave</h3>
+            <ul>
+              <li><b>PO (PMO/Portafolio):</b> define criterios de aceptación, prioriza, valida y lidera Pruebas.</li>
+              <li><b>BIM (Admin ACC):</b> disciplina de Reviews, saneamiento CDE, vista 3D, estándares de captura.</li>
+              <li><b>TI/Plataforma:</b> accesos, seguridad, tenant Power BI, entornos, RLS (si aplica).</li>
+              <li><b>GCPPI:</b> aprobador final del A3 y del estándar operativo del MVP.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>MVP con <b>refresh semanal</b>; se habilita <b>diario selectivo</b> por criterio de impacto económico.</li>
+              <li>No hay campos personalizados en Reviews: el monto se captura en <b>memo con gramática fija</b>.</li>
+              <li>El saneamiento CDE es prerequisito para entrada del proveedor “sin restricciones”.</li>
+              <li>Todo cambio de alcance/costo/plazo se gestiona por <b>CR</b>.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO (D) -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque</h3>
+            <ul>
+              <li><b>Real desde CDE:</b> usar Reviews ACC/BIM360 como fuente auditada (aprobación + evidencia).</li>
+              <li><b>Planificado MVP:</b> Excel controlado y versionado, persistido en BD Portafolio para evitar “Excels encadenados”.</li>
+              <li><b>Vista 3D:</b> link a modelo federado por proyecto en ACC (definido durante saneamiento).</li>
+              <li><b>Gestión por excepción:</b> semáforos de atraso y desviación económica para decisiones rápidas.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧾</span>Reglas de captura del “Real” (ACC/BIM360)</h3>
+            <ul>
+              <li>Un Review es válido si: <b>status=closed</b>, <b>finished_at</b> no nulo, <b>docs_count=approved_count</b>, excluir <b>void</b>.</li>
+              <li><b>Hitos:</b> 1 Review por hito con título: <b>ETAPA - H### - Hito</b> · fecha real = <b>finished_at</b>.</li>
+              <li><b>Pagos:</b> 1 Review por pago con título: <b>ETAPA - AE - MMM-YY</b> · real mensual = suma pagos publicados del mes.</li>
+              <li><b>Memo (monto):</b> <b>AE|MONTO_SIN_IGV=...|MONTO_CON_IGV=...|MONEDA=PEN</b> (IGV como filtro en Power BI).</li>
+              <li><b>Correcciones:</b> si hay error, el aprobador anula (<b>void</b>) y el iniciador crea un Review nuevo.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ol style="margin:0; padding-left:5mm; font-size:9pt; line-height:1.25;">
+              <li>Dashboard Power BI (portafolio + proyecto) con hitos y pagos Plan vs Real + semáforos + filtro IGV.</li>
+              <li>BD Portafolio (modelo mínimo viable) + diccionario de datos.</li>
+              <li>ETL ACC→BD con parse de memo + reglas de validez + logs y trazabilidad.</li>
+              <li>Excel planificado controlado + validaciones + ETL de carga.</li>
+              <li>Documentación técnica (arquitectura, escalamiento a BD/UI, operación de refresh).</li>
+              <li>Capacitación + transferencia + acta Pruebas + Go-Live.</li>
+              <li>Enlaces a vista 3D del modelo federado por proyecto (ACC).</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📐</span>Reglas técnicas / Estándar (calidad de dato)</h3>
+            <ul>
+              <li><b>ISO 19650 (CDE):</b> trazabilidad por contenedores/estados/revisiones/versiones.</li>
+              <li><b>Quality gate:</b> `docs_count=approved_count` como regla mínima de evidencia.</li>
+              <li><b>Logs:</b> todo registro inválido debe registrar causa (no parseable, sin finished_at, QA no cumple, void).</li>
+              <li><b>Refresh:</b> semanal (MVP) + diario selectivo bajo criterio PO/TI (impacto económico).</li>
+              <li><b>Seguridad:</b> perfiles/roles (RLS) según lineamientos TI (si aplica).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance, criterios de aceptación, estándares (títulos/memo), arquitectura objetivo.</td>
+                  <td class="w-fecha">26-02-16 → 26-03-06</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>Elaboración TDR.</td>
+                  <td class="w-fecha">26-03-09 → 26-03-31</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Proceso de contratación.</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación de información + saneamiento CDE (nombres, workflows, 1:1, vista 3D, disciplina Reviews).</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Inicio captura “Real” estandarizada en Reviews.</td>
+                  <td class="w-fecha"><b>26-08-10</b></td>
+                </tr>
+                <tr>
+                  <td><b>6</b></td>
+                  <td>Ejecución contractual: BD+ETL+PBI+doc+transferencia+Pruebas+Go-Live.</td>
+                  <td class="w-fecha">26-09-07 → 26-11-27</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Roles y responsabilidades (RACI corto)</h3>
+            <ul>
+              <li><b>R (Responsible):</b> Proveedor (PM, Data Engineer, BI Dev, QA, Especialista ACC).</li>
+              <li><b>A (Accountable):</b> PO PMO/Portafolio (aceptación) + Coordinador Corporativo BIM (CDE/estándar).</li>
+              <li><b>C (Consulted):</b> TI/Plataforma, GCPPI, Logística, líderes de proyectos.</li>
+              <li><b>I (Informed):</b> stakeholders del portafolio (comités y usuarios consumidores del dashboard).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Monto planificado del servicio:</b> <b>S/. 70,192.00</b> (incluye desarrollo/implementación y licencias/servicios adicionales necesarios para operar el MVP).</li>
+              <li><b>Ya disponible:</b> ACC (Autodesk Construction Cloud) y Power BI corporativo (no se presupuestan licencias adicionales para estas plataformas).</li>
+              <li><b>Incluye (mínimo):</b> BD Portafolio + ETL ACC→BD (parse memo + logs), dataset y dashboard Power BI, documentación, capacitación y soporte de salida a producción.</li>
+              <li><b>Adquisición:</b> contratación de proveedor (servicio) con TDR y aceptación vía Pruebas del A3.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📣</span>Comunicaciones (cadencia + canales)</h3>
+            <ul>
+              <li><b>Semanal:</b> seguimiento (BIM/PMO/TI/Proveedor) con tablero de bloqueos.</li>
+              <li><b>Quincenal:</b> comité de decisión (PO + BIM + TI + GCPPI).</li>
+              <li><b>Canales:</b> CDE (evidencias Reviews + vista 3D), Git (ETL/dataset/doc), actas y CR.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT (C/A) FULL WIDTH -->
+      <section class="col act check">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos (top)</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Saneamiento CDE incompleto</b> (nombres/workflows/vista 3D/1:1).</p>
+                <p class="hint">Mitigación: checklist formal + responsables + auditoría antes del 2026-09-07.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Memos no estandarizados</b> → montos no parseables.</p>
+                <p class="hint">Mitigación: guía corta + ejemplos + capacitación; rechazo operativo (void) si no cumple.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Carga operativa</b> (1 review por pago).</p>
+                <p class="hint">Mitigación: plantillas + entrenamiento; monitoreo; opción futura consolidación mensual (release posterior).</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Costo/performance de refresh</b> (si crece volumen o se exige diario).</p>
+                <p class="hint">Mitigación: MVP semanal; activar diario solo donde haya impacto económico.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Proyectos multi-iniciativa</b> distorsionan KPIs.</p>
+                <p class="hint">Mitigación: saneamiento 1:1 + lista final en alcance congelada antes de cutover.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs del MVP)</h3>
+            <ul>
+              <li><b>KPI1 Reducción tiempo de reporte (%):</b> (T_baseline − T_MVP)/T_baseline · <b>Meta:</b> ≥50%.</li>
+              <li><b>KPI2 Conformidad Reviews (%):</b> válidos y conformes / total · <b>Semáforo:</b> 🟢≥95% 🟡85–94% 🔴&lt;85%.</li>
+              <li><b>KPI3 Cumplimiento refresh (SLA):</b> actualizaciones en fecha · <b>Semáforo:</b> 🟢ok 🟡≤2 días 🔴&gt;2 días.</li>
+              <li><b>KPI4 Latencia (evento→visible):</b> semanal ≤7 días; diario selectivo ≤24h en proyectos críticos.</li>
+              <li><b>KPI5 Cobertura portafolio (%):</b> proyectos con vista 3D + reviews activos en alcance · <b>Meta:</b> ≥95%.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (calidad y auditoría)</h3>
+            <ul>
+              <li><b>Pre-cutover:</b> checklist de saneamiento CDE (workflows, aprobadores, naming, vista 3D, 1:1).</li>
+              <li><b>Post-cutover:</b> muestreo semanal de Reviews (n≥10 o 10%) para conformidad de título/memo/QA.</li>
+              <li><b>ETL:</b> revisión de logs y tasa de rechazo (causas) + acciones correctivas.</li>
+              <li><b>Pruebas:</b> casos de prueba por hitos/pagos/IGV/filtros/links 3D + acta firmada.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:5mm; font-size:9pt; line-height:1.25;">
+              <li>El “Real” aplica reglas: <b>closed</b>, <b>finished_at</b>, <b>docs_count=approved_count</b>, excluye <b>void</b>; con <b>logs</b> de rechazos.</li>
+              <li>Hitos y pagos se leen por naming estándar; memo AE se parsea (sin/sobre IGV + moneda).</li>
+              <li>Dashboard portafolio + proyecto con Plan vs Real (hitos y económico), semáforos, filtros e IGV.</li>
+              <li>Planificado desde Excel controlado/versionado y persistido en BD Portafolio.</li>
+              <li>Link a <b>vista 3D</b> funcional por proyecto en ACC.</li>
+              <li>Refresh semanal operativo (y diario selectivo si aplica) con timestamp visible.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (ACT)</h3>
+            <ul>
+              <li><b>Go-Live:</b> publicación y comunicación oficial (repositorios, links, guía rápida).</li>
+              <li><b>Adopción:</b> inducción a usuarios (PO/BIM/Proyectos) + soporte primeras 2 semanas.</li>
+              <li><b>Gestión por excepción:</b> revisión quincenal de semáforos + acciones correctivas.</li>
+              <li><b>Control de cambios:</b> CR para ampliar alcance (más fuentes, UI, automatizaciones).</li>
+              <li><b>Escalamiento:</b> ruta a BD+UI administrable y refresh más frecuente según costo/beneficio.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+<div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: PO PMO/Portafolio + TI · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-02-16 · Objetivo: 2026-11-27</div>
+    </div>
+
+  </div>
+</body>
+</html>
