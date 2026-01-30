@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — TEC-6 (Gemelos digitales en SET)</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:64px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height:1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">TEC-6</div>
+        <div class="subtitle">
+          Gemelos digitales en SET — Escalar gemelo desde piloto (1 SET) hacia oleadas de SET con modelo 3D, integrando <b>SCADA</b> (5 min + histórico), <b>SAP</b> (OT), <b>GIS</b> (geo/técnico) y <b>CDE (ACC)</b> (documentación) en una sola experiencia.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Fuentes: SCADA · SAP · GIS · CDE</span>
+          <span class="chip">Estrategia: SaaS gemelo + APIs corporativas</span>
+          <span class="chip">MVP: Oleada 1 (readiness) + fábrica onboarding</span>
+          <span class="chip">Presupuesto: S/. 600,000.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · Técnica · Legal · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-03-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-12-11</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Escalar el gemelo digital desde el piloto (1 SET) hacia <b>oleadas</b> de SET con modelo 3D disponible, integrando SCADA (5 min + histórico), SAP (OT), GIS (geo/técnico) y CDE (ACC) para habilitar diagnóstico más rápido, mantenimiento contextualizado y trazabilidad documental/geográfica.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>El piloto no cerró a tiempo por <b>fragilidad operativa</b> (dependencia TIC y eliminación de web services).</li>
+              <li>La operación requiere contexto unificado: datos en SCADA/SAP/GIS y expediente en CDE → hoy están <b>dispersos</b>.</li>
+              <li>Escalar SET por SET con integraciones artesanales no es sostenible → se requiere <b>plataforma + proceso</b> repetible.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP 2026):</b> SaaS gemelo operativo (tenant, permisos, estructura multi-SET, templates); integración SCADA/SAP/GIS para <b>oleada 1</b> (definida por readiness); gobierno de <b>llaves primarias</b> en modelos 3D (enlace con SCADA/SAP/GIS); proceso de onboarding (“fábrica”) para preparar modelos/LOIN por oleadas; runbook + monitoreo + OLA/SLA + control de cambios.</p>
+            <p><b>OUT (MVP):</b> modelar desde cero todas las SET sin modelo 3D; analítica predictiva avanzada; reemplazar SCADA/SAP/GIS (solo integración).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧠</span>Estrategia recomendada</h3>
+            <ul>
+              <li>Adquirir un <b>SaaS de gemelo digital</b> que consuma web services corporativos (SCADA/SAP/GIS) y visualice 3D + propiedades/llaves.</li>
+              <li><b>Alternativa viable:</b> Autodesk Tandem (gestión de propiedades/llaves mediante API). <span class="hint">(Tandem for AEC puede estar incluido como entitlement en BIM Collaborate Pro, sujeto a licenciamiento vigente).</span></li>
+              <li>La capa de <b>llaves y mapeos</b> debe ser un activo corporativo para reducir lock-in (APIs, diccionario, validadores).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚧</span>Gate crítico PRE-TDR (ICT-01)</h3>
+            <p><b>ICT-01 — Informe de Compatibilidad TIC (obligatorio antes del TDR).</b> Validar compatibilidad de integraciones y forma de consumo por SaaS con arquitectura/seguridad (SSO/IAM, OT/IT), operación/continuidad, performance/límites.</p>
+            <p class="hint">Regla: si hay brechas, la adecuación debe incluirse en el contrato (alcance/entregables/costo/plazo), no quedar como dependencia externa.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM (gobierno de información, llaves y onboarding de modelos).</li>
+              <li><b>A:</b> GCPPI (aceptación/decisiones).</li>
+              <li><b>C:</b> TIC (seguridad/integración/operación) · Técnica (llaves/validación) · Legal (cláusulas/risks) · Logística (contratación).</li>
+              <li><b>I:</b> GR · GG.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Ejecutar <b>ICT-01</b> (compatibilidad TIC) + diseño TO-BE + criterios del TDR.</li>
+              <li>Implementar <b>SaaS gemelo</b>: tenant, permisos, estructura multi-SET y templates por SET.</li>
+              <li>Definir y gobernar <b>llaves primarias</b> en modelos 3D (parámetros “clave”) para enlazar SCADA/SAP/GIS con elementos 3D.</li>
+              <li>Integración datos: <b>SCADA</b> (refresh 5 min + histórico), <b>SAP</b> (OT), <b>GIS</b> (geo/técnico) para <b>oleada 1</b>.</li>
+              <li>Operación: monitoreo, runbook, OLA/SLA y control de cambios ("no borrar sin RFC").</li>
+              <li>“Fábrica” de onboarding: checklist + validadores + backlog por SET (no bloquea inicio del SaaS).</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗂️</span>Definición Oleada 1 (readiness)</h3>
+            <ul>
+              <li>SET con <b>modelo 3D disponible</b> y LOIN mínimo verificable.</li>
+              <li>Web services SCADA/SAP/GIS disponibles y autorizados (seguridad OT/IT validada por TIC).</li>
+              <li>Llaves primarias definidas, validadas y auditables (diccionario + validación automática).</li>
+              <li>Expediente documental en CDE (ACC): rutas/IDs/versiones consistentes para contexto del activo.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>5.1</b></td>
+                  <td>Definición de alcance (MVP), criterios de readiness (oleadas) y KPIs.</td>
+                  <td class="w-fecha">2026-03-16 → 2026-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>ICT-01</b></td>
+                  <td>Compatibilidad TIC (obligatorio pre-TDR) + matriz brechas + esfuerzo de adecuación.</td>
+                  <td class="w-fecha">2026-03-16 → 2026-04-10</td>
+                </tr>
+                <tr>
+                  <td><b>5.2</b></td>
+                  <td>TDR (incluye resultados ICT-01 y adecuaciones dentro del contrato).</td>
+                  <td class="w-fecha">2026-03-30 → 2026-04-24</td>
+                </tr>
+                <tr>
+                  <td><b>5.3</b></td>
+                  <td>Contratación (Logística + TIC + BIM + Técnica + Legal + GCPPI).</td>
+                  <td class="w-fecha">2026-04-27 → 2026-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>5.4</b></td>
+                  <td>Recopilación (paralela): inventario SET, modelos 3D, llaves, endpoints, permisos, datos.</td>
+                  <td class="w-fecha">2026-04-27 → 2026-09-25</td>
+                </tr>
+                <tr>
+                  <td><b>5.5</b></td>
+                  <td>Ejecución contractual: SaaS + adecuaciones + integración oleada 1 + onboarding + UAT + operación.</td>
+                  <td class="w-fecha">2026-09-28 → 2026-12-11</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Hitos sugeridos (ejecución): S1–2 SaaS+templates+llaves · S3–6 integraciones SCADA/SAP/GIS + histórico · S7–8 onboarding SET + QA llaves · S9–10 hardening+OLA/SLA+UAT+capacitación.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Presupuesto total:</b> <b>S/. 600,000.00</b>.</li>
+              <li><b>Compra principal:</b> SaaS gemelo digital (p.ej., Tandem) + servicios de configuración e integración.</li>
+              <li><b>Condicional:</b> adecuación de integraciones según brechas detectadas por <b>ICT-01</b> (incluida en contrato).</li>
+              <li><b>Monitoreo/logging:</b> usar estándar corporativo si existe; si no, incluir como componente del servicio.</li>
+              <li><b>OT/SCADA:</b> si TIC exige gateway/DMZ/edge, se cubre en adecuación.</li>
+            </ul>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>ICT-01 Compatibilidad TIC (pre-TDR) + diseño TO-BE</td><td><b>6%</b></td><td><b>36,000</b></td></tr>
+                <tr><td>SaaS gemelo + configuración multi-SET + templates</td><td><b>18%</b></td><td><b>108,000</b></td></tr>
+                <tr><td>Adecuación de integraciones (condicionada a ICT-01)</td><td><b>22%</b></td><td><b>132,000</b></td></tr>
+                <tr><td>Integración SCADA/SAP/GIS + histórico + pruebas (oleada 1)</td><td><b>28%</b></td><td><b>168,000</b></td></tr>
+                <tr><td>Preparación modelos 3D: llaves + QA + proceso onboarding</td><td><b>16%</b></td><td><b>96,000</b></td></tr>
+                <tr><td>UAT operativa + capacitación + gestión del cambio</td><td><b>6%</b></td><td><b>36,000</b></td></tr>
+                <tr><td>Contingencia</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Nota: precios SaaS deben cotizarse por canal/región; por eso se tratan como partida porcentual dentro del presupuesto.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Recursos y roles (mínimo)</h3>
+            <ul>
+              <li><b>PO/BA:</b> GCPPI (priorización, aceptación, UAT).</li>
+              <li><b>BIM Information Manager:</b> llaves, QA, proceso de saneamiento y onboarding.</li>
+              <li><b>Arquitecto integración/seguridad:</b> TIC + proveedor (OT/IT, IAM, auditoría).</li>
+              <li><b>Data Engineer:</b> mapeos, calidad, cache/históricos (SCADA 5min).</li>
+              <li><b>Configurador SaaS:</b> setup tenant, templates, permisos, vistas.</li>
+              <li><b>QA/UAT:</b> operación, seguridad y continuidad.</li>
+              <li><b>Legal:</b> cláusulas de no interferencia con piloto, licencias y responsabilidades.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Dependencia TIC / continuidad (precedente: eliminación web services)</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: ICT-01 + OLA/SLA, owner, change management “no borrar sin RFC”, monitoreo y runbook firmados.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Integraciones no compatibles con lineamientos TIC</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: si ICT-01 detecta brechas, adecuación dentro del contrato (gateway/cache, auth, hardening, monitoreo).</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Modelos 3D con LOIN heterogéneo / faltantes</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: no bloquear SaaS; saneamiento por oleadas + QA de llaves + backlog por SET con checklist onboarding.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Seguridad OT/SCADA</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: arquitectura híbrida (gateway/DMZ/edge), mínimo privilegio, auditoría, aprobación TIC previa a producción.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Riesgo contractual por piloto en curso</b> (Media/Media).</p>
+                <p class="hint">Mitigación: delimitar responsabilidades (SaaS vs web services corporativos), revisión Legal temprana y cláusula de no interferencia.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Vendor lock-in SaaS</b> (Media/Media).</p>
+                <p class="hint">Mitigación: mantener capa de integración y modelo de llaves como activos corporativos; uso de APIs para portabilidad.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs sugeridos)</h3>
+            <ul>
+              <li><b>KPI1 Eficiencia diagnóstico (%):</b> reducción ≥ <b>25–30%</b> del tiempo de consulta/diagnóstico en UAT (SCADA histórico + SAP OTs).</li>
+              <li><b>KPI2 Cobertura integración (%):</b> ≥ <b>90%</b> de activos críticos (oleada 1) con llave válida y datos vinculados.</li>
+              <li><b>KPI3 Escalabilidad:</b> checklist de onboarding por SET validado y reusable (sin retrabajo mayor).</li>
+              <li><b>KPI4 Disponibilidad:</b> 99.0% mensual (gemelo) + OLA TIC para integraciones con ventanas de mantenimiento.</li>
+              <li><b>KPI5 Cumplimiento refresh:</b> SCADA 5 min operativo + histórico consultable (según diseño TIC).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (operación, seguridad y continuidad)</h3>
+            <ul>
+              <li><b>ICT-01:</b> matriz cumple/no cumple/requiere adaptación + esfuerzo; aprobación TIC antes del TDR.</li>
+              <li><b>Llaves:</b> validador automático (completitud/unicidad) + muestreo manual con Técnica.</li>
+              <li><b>Seguridad:</b> pruebas con perfiles reales, auditoría de accesos, segmentación OT/IT y mínimos privilegios.</li>
+              <li><b>Continuidad:</b> runbook, monitoreo, alertas, backups (si aplica) y RFC para cambios en web services.</li>
+              <li><b>UAT:</b> escenarios: diagnóstico SCADA histórico/5min, OT SAP, localización GIS, documentos CDE por activo.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>DoD / Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li><b>ICT-01</b> aprobado por TIC (compatible o con adecuaciones incluidas en contrato).</li>
+              <li>SaaS gemelo operativo (tenant, permisos, estructura multi-SET y templates) en ambientes definidos por TIC.</li>
+              <li>Oleada 1 con SET(s) con modelo 3D: integración <b>SCADA 5min + histórico</b>, <b>SAP OTs</b> y <b>GIS</b> visible en gemelo.</li>
+              <li><b>Llaves primarias</b> implementadas y validadas en modelos 3D (conformidad TIC + Técnica) y diccionario de llaves entregado.</li>
+              <li>Runbook + monitoreo + OLA/SLA + control de cambios implementados para evitar caída/eliminación de servicios.</li>
+              <li>Checklist de onboarding por SET validado y backlog de oleadas siguientes priorizado.</li>
+              <li>Acta UAT firmada por GCPPI con KPIs alcanzados o plan de remediación aceptado.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
+            <ul>
+              <li>Escalar cobertura a “todas las SET con modelo 3D” por oleadas con control de readiness y costos.</li>
+              <li>Madurar la “fábrica” (automatizar validadores, plantillas, QA de llaves y LOIN) y reforzar gobierno de cambios.</li>
+              <li>Evaluar analítica avanzada/predictiva cuando el gemelo tenga estabilidad operativa y datos consistentes.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: TIC + Técnica + Legal · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-03-16 · Objetivo: 2026-12-11</div>
+    </div>
+
+  </div>
+</body>
+</html>
