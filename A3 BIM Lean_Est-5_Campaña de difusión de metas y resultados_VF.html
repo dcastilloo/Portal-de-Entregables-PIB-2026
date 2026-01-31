@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — EST-5</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do   .colhead{ background: var(--d); }
+    .act  .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-fase{ width:88px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height:1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">EST-5</div>
+        <div class="subtitle">
+          Campaña de difusión de metas y resultados BIM — campaña mixta (interna + externa) con kit reutilizable y operación instalada para 12 meses.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Audiencias: Directorio/GG/GR · Sector · Academia</span>
+          <span class="chip">Sprint 2026: 30/03 → 24/04 (4 semanas)</span>
+          <span class="chip">Operación: 12 meses post-cierre</span>
+          <span class="chip">Presupuesto: S/. 35,096.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · Comunicaciones · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-03-16</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-12-11</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Diseñar y ejecutar una <b>campaña mixta (interna + externa)</b> para difundir <b>metas, avances y resultados BIM</b> (especialmente: <b>proyectos BIM y montos de inversión</b>),
+              posicionando a Distriluz frente a <b>Directorio/GG/GR</b>, el <b>sector</b> y la <b>academia</b>; dejando <b>configuraciones y kit operativo</b>
+              para que <b>Comunicaciones</b> la opere por <b>12 meses</b> posteriores al cierre del servicio.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Avances BIM y automatizaciones existen, pero no se comunican de forma consistente por audiencia → baja visibilidad ejecutiva.</li>
+              <li>Sin narrativa y evidencias (proyectos/montos), se reduce el respaldo para decisiones (prioridades, recursos, escalamiento).</li>
+              <li>Oportunidad de liderazgo: mostrar la ruta <b>BIM → datos → automatización → resultados → IA</b> ante sector y academia.</li>
+              <li>Necesidad de <b>capacidad instalada</b> (plantillas, repositorio, calendario, flujo de aprobación) para operar sin proveedor.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP 2026 + handover):</b> estrategia y narrativa (1 mensaje central + 3 mensajes clave), kit de contenidos reutilizable (infografías, carruseles, videos, boletín, press kit, one-pager),
+              configuración para operar 12 meses (calendario editorial, plantillas editables, repositorio M365, checklist y flujo de aprobaciones), sprint de 4 semanas con 3 oleadas + reporte KPI y handover.</p>
+            <p><b>OUT:</b> pauta pagada (ads) si no se autoriza; producción audiovisual cinematográfica; eventos presenciales (CONEBIM u otros);
+              gestión diaria de redes durante 12 meses (se entrega kit + manual, la operación la hace Comunicaciones).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Audiencias y mensajes</h3>
+            <ul>
+              <li><b>Directorio/GG/GR:</b> impacto, inversión, hoja de ruta, decisiones requeridas (mensaje ejecutivo).</li>
+              <li><b>Sector:</b> liderazgo técnico, casos, estándares, interoperabilidad (mensaje reputacional).</li>
+              <li><b>Academia:</b> colaboración, talento, casos y tendencias BIM→IA (mensaje de alianza).</li>
+            </ul>
+            <p class="hint" style="margin-top:8px;">Principio Lean: comunicar valor y resultados con evidencia, evitando sobrecargar con detalle técnico no accionable para ejecutivos.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧾</span>Fuente de datos y reglas de publicación</h3>
+            <ul>
+              <li><b>Fuente oficial de proyectos/montos:</b> <b>GCPPI</b> (lista y montos de inversión).</li>
+              <li><b>Reglas:</b> publicar en rangos o agregados si hay sensibilidad; evitar datos contractuales sensibles.</li>
+              <li><b>Vocerías:</b> definir voceros autorizados y Q&A antes de prensa.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>Se definirá un <b>flujo de aprobación</b> con SLA objetivo <b>48h</b> (BIM + GCPPI + Comunicaciones).</li>
+              <li>Uso de M365 (SharePoint) como repositorio institucional con versionado básico.</li>
+              <li>Las piezas deben ser <b>editables</b> (PowerPoint/Canva/Adobe según defina Comunicaciones).</li>
+              <li>Sin pauta pagada salvo autorización formal; enfoque orgánico con medición por canal.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Estrategia y narrativa (entregable)</h3>
+            <ul>
+              <li><b>Mensaje central (1):</b> valor e impacto BIM en inversiones.</li>
+              <li><b>Mensajes clave (3):</b> (i) portafolio BIM y montos, (ii) estandarización, (iii) automatizaciones y próximos hitos.</li>
+              <li><b>Storyline:</b> Implementación → Estandarización → Automatización → Resultados → Próximos hitos.</li>
+              <li><b>Tono:</b> adaptado por audiencia (interno/externo) y por canal.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Kit de contenidos (producido y reutilizable)</h3>
+            <ul>
+              <li><b>Infografías:</b> 6 (KPIs, mapa de proyectos, hitos, automatización).</li>
+              <li><b>Carruseles LinkedIn:</b> 6 (6–10 slides).</li>
+              <li><b>Videos cortos:</b> 4 (30–60s, motion/edición ligera, subtítulos).</li>
+              <li><b>Boletín mensual:</b> plantilla + 2 ediciones listas.</li>
+              <li><b>Press kit:</b> nota base + Q&A + hoja de datos + banco de citas.</li>
+              <li><b>One-pager ejecutivo:</b> PDF para Directorio/GG/GR (montos + resultados + próximos hitos).</li>
+              <li><b>Paquete media:</b> banco de imágenes + key visuals + lineamientos de uso.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗂️</span>Configuración para operar 12 meses</h3>
+            <ul>
+              <li><b>Calendario editorial 12 meses:</b> temas, frecuencia, responsables (editable).</li>
+              <li><b>Plantillas editables:</b> PPT/Canva/Adobe (según define Comunicaciones).</li>
+              <li><b>Repositorio M365:</b> estructura SharePoint (carpetas, permisos, versionado).</li>
+              <li><b>Checklist + flujo de aprobación:</b> quién revisa qué y en cuánto tiempo (SLA).</li>
+              <li><b>Manual operativo:</b> cómo publicar, editar y medir (handover).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma oficial + sprint)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-fase">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>Alcance</b></td>
+                  <td>Tema central, narrativa, canales, reglas de publicación, voceros y SLA de aprobación.</td>
+                  <td class="w-fecha">26-01-26 → 26-02-13</td>
+                </tr>
+                <tr>
+                  <td><b>TDR</b></td>
+                  <td>Requerimientos, entregables, criterios de evaluación, SLAs y formatos editables.</td>
+                  <td class="w-fecha">26-02-16 → 26-02-27</td>
+                </tr>
+                <tr>
+                  <td><b>Contratación</b></td>
+                  <td>Adjudicación del servicio.</td>
+                  <td class="w-fecha">26-03-02 → 26-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>Sprint</b></td>
+                  <td><b>4 semanas</b>: lanzamiento + 3 oleadas + reporte KPI + handover a Comunicaciones.</td>
+                  <td class="w-fecha"><b>26-03-30 → 26-04-24</b></td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Operación anual: Comunicaciones publica 2–4 piezas/mes y mide cumplimiento trimestral (≥80%).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto</h3>
+            <p><b>Presupuesto total:</b> <b>S/. 35,096.00</b> (servicio integral de campaña + producción piezas + medición + handover).</p>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:150px;">Monto (S/.)</th>
+                  <th>Qué cubre</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Estrategia, narrativa, plan editorial 12 meses + flujo aprobación</td>
+                  <td><b>18%</b></td>
+                  <td><b>6,317</b></td>
+                  <td>Mensajes por audiencia + calendario anual</td>
+                </tr>
+                <tr>
+                  <td>Producción piezas (infografías + carruseles)</td>
+                  <td><b>30%</b></td>
+                  <td><b>10,529</b></td>
+                  <td>6 infografías + 6 carruseles (editables)</td>
+                </tr>
+                <tr>
+                  <td>Videos cortos (motion/edición ligera)</td>
+                  <td><b>22%</b></td>
+                  <td><b>7,721</b></td>
+                  <td>4 videos 30–60s + subtítulos</td>
+                </tr>
+                <tr>
+                  <td>Boletín mensual (plantilla + 2 ediciones)</td>
+                  <td><b>10%</b></td>
+                  <td><b>3,510</b></td>
+                  <td>Formato + guía editorial</td>
+                </tr>
+                <tr>
+                  <td>Press kit + nota web + coordinación prensa</td>
+                  <td><b>10%</b></td>
+                  <td><b>3,510</b></td>
+                  <td>Q&A + hoja de datos + nota base</td>
+                </tr>
+                <tr>
+                  <td>Medición KPI + reporte + handover (manual + M365)</td>
+                  <td><b>8%</b></td>
+                  <td><b>2,808</b></td>
+                  <td>Tablero simple + capacitación</td>
+                </tr>
+                <tr>
+                  <td>Contingencia</td>
+                  <td><b>2%</b></td>
+                  <td><b>702</b></td>
+                  <td>Ajustes y retrabajos menores</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Adquisición: servicio (proveedor). Canales y herramientas se ajustan a lineamientos de Comunicaciones/TIC (sin pauta salvo autorización).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📣</span>Comunicaciones (cadencia + canales + dueños)</h3>
+            <ul>
+              <li><b>Weekly stand-up:</b> BIM + Com + Proveedor (30 min) para revisión de piezas y bloqueos.</li>
+              <li><b>SLA aprobación:</b> 48h (BIM valida técnica; GCPPI valida datos/montos; Com valida tono/imagen).</li>
+              <li><b>Canales internos:</b> correo corporativo + intranet/SharePoint (según política).</li>
+              <li><b>Canales externos:</b> LinkedIn + web corporativa + prensa (según aprobación).</li>
+              <li><b>Repositorio oficial:</b> M365 (SharePoint) con control de versiones y evidencias.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Aprobaciones lentas / no definidas</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: flujo BIM+GCPPI+Com con <b>SLA 48h</b>, responsables y “aprobación por silencio” si aplica; tablero de pendientes.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Datos/montos incompletos o sensibles</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: fuente oficial (GCPPI) + reglas de publicación (rangos/agregados) + validación previa a publicar.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Mensaje técnico no “aterriza” a Directorio</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: one-pager ejecutivo + infografía de impacto y próximos hitos; lenguaje orientado a decisión.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Riesgo reputacional por prensa</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: press kit + Q&A + voceros definidos; alineamiento previo y revisión de contenidos.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Transferencia incompleta a Comunicaciones</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: plantillas editables + manual + calendario 12 meses + sesión de handover + checklist de operación.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>KPIs propuestos (por canal)</h3>
+            <ul>
+              <li><b>Correo interno:</b> apertura ≥45% · CTR ≥5% · “Entendí avance BIM” ≥80% positivo.</li>
+              <li><b>LinkedIn:</b> impresiones (tendencia creciente por oleada) · engagement ≥3% · seguidores +1–3% durante sprint.</li>
+              <li><b>Web:</b> visitas ≥1,000 en el mes · tiempo en página ≥1:00 (ajustable al baseline real).</li>
+              <li><b>Prensa:</b> 3–6 menciones; ≥1 medio sectorial relevante.</li>
+              <li><b>Operación anual:</b> 2–4 piezas/mes · cumplimiento calendario trimestral ≥80%.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación</h3>
+            <ul>
+              <li><b>Semana 1:</b> narrativa + lineamientos + plantillas + 2 piezas piloto aprobadas (gate de calidad).</li>
+              <li><b>Semanas 2–4:</b> ejecución de oleadas + reporte intermedio + ajustes por métricas (Lean: medir y corregir rápido).</li>
+              <li><b>Cierre:</b> reporte KPI consolidado + repositorio M365 completo + manual operativo + capacitación a Comunicaciones.</li>
+              <li><b>Operación 12 meses:</b> revisión trimestral del calendario y KPIs; backlog de mejoras de plantillas.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Estrategia/narrativa aprobada: 1 mensaje central + 3 mensajes clave + segmentación por audiencia.</li>
+              <li>Kit entregado (editables): 6 infografías, 6 carruseles, 4 videos, one-pager ejecutivo, press kit, media pack.</li>
+              <li>Boletín: plantilla + 2 ediciones listas (y guía editorial para continuidad).</li>
+              <li>Calendario editorial 12 meses (temas, frecuencia, responsables) + checklist de publicación + flujo de aprobación con SLA.</li>
+              <li>Repositorio M365 configurado (estructura, permisos, versionado) con todos los archivos fuente y finales.</li>
+              <li>Reporte KPI de cierre (correo, LinkedIn, web, prensa) + recomendaciones accionables.</li>
+              <li>Handover a Comunicaciones (sesión + manual) para operar 12 meses sin proveedor.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (ACT)</h3>
+            <ul>
+              <li>Actualizar trimestralmente el calendario con base en resultados (qué funcionó / qué no).</li>
+              <li>Reutilizar piezas: “repurpose” (infografía → carrusel → video → boletín) para eficiencia.</li>
+              <li>Estándares de datos: si cambian montos/listas, se versiona y se registra fuente (GCPPI) para trazabilidad.</li>
+              <li>Backlog anual: nuevas automatizaciones y casos para mantener narrativa viva (BIM + Com).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Comunicaciones + JAP + Logística · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-03-16 · Cierre sprint: 2026-04-24 · Operación: 12 meses</div>
+    </div>
+
+  </div>
+</body>
+</html>

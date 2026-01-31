@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — EST-8</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:68px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height:1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">EST-8</div>
+        <div class="subtitle">
+          CONEBIM (3.ª edición) — Trujillo (HDNA). Evento de difusión y posicionamiento para mostrar avances BIM de Distriluz y sostener su imagen como referente BIM en energía (Perú/LATAM).
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Formato: 3 días · presencial + streaming</span>
+          <span class="chip">Aforo: 200 presenciales</span>
+          <span class="chip">Streaming: pico ~1000</span>
+          <span class="chip">Idiomas: ES + PT/EN (traducción)</span>
+          <span class="chip">Ponentes: ~30 (80% nac / 20% int)</span>
+          <span class="chip">Presupuesto: S/. 210,576.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Logística · GG · Comunicaciones · Personas · Legal · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-02-02</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-11-27</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Organizar la <b>3.ª edición de CONEBIM</b> en Trujillo (HDNA) como evento de difusión y posicionamiento para mostrar avances BIM de Distriluz y reforzar una narrativa estratégica: <b>BIM → datos → automatización → IA / gemelos digitales</b>.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧭</span>Tema central y ejes</h3>
+            <ul>
+              <li><b>Tema (a confirmar en alcance):</b> “BIM como medio para la adopción de IA en el sector eléctrico”.</li>
+              <li><b>Ejes sugeridos:</b> Gobierno de información (ISO 19650), CDE y trazabilidad; datos/BI; automatización (Dynamo/ETL); IA aplicada; gemelos digitales/SET; casos de éxito y lecciones aprendidas; academia y talento.</li>
+              <li><b>Regla:</b> agenda coherente por ejes (tracks) y objetivos de posicionamiento (no solo charlas aisladas).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN:</b> diseño integral (agenda 3 días, tracks, guion/escaleta); gestión/confirmación de ponentes; producción técnica presencial+streaming+grabación; traducción simultánea; local y logística integral; comunicaciones (branding, piezas, prensa, memoria); repositorio institucional M365 (videos/fotos/material).</p>
+            <p><b>OUT:</b> compromisos de patrocinio que afecten procesos de compra; links abiertos sin control de permisos; improvisación de agenda sin comité curador.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Clientes / interesados clave (RACI operativo)</h3>
+            <ul>
+              <li><b>R (responsables):</b> BIM (curaduría técnica), Comunicaciones (branding/difusión/prensa), Personas (protocolo/ponentes/invitados), Logística (local/catering/montaje), Proveedor (producción integral).</li>
+              <li><b>A (accountable):</b> <b>GCPPI</b> (aprobación, dirección del PD).</li>
+              <li><b>C (consulted):</b> Legal (contratos/imagen/datos), GG (alineamiento reputacional), TIC (repositorio M365/streaming/permisos), JAP (coordinación).</li>
+              <li><b>I (informed):</b> GR y demás áreas según plan de comunicaciones.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>Evento híbrido (presencial + streaming) con <b>redundancias</b> (internet, grabación local, respaldos).</li>
+              <li>Política ponentes: pasajes para todos; hospedaje solo internacionales; viáticos para todos.</li>
+              <li>Contenido y materiales post-evento quedan en <b>repositorio institucional</b> (M365) con permisos y retención acordados con TIC.</li>
+              <li>Si se habilita patrocinio, debe ser <b>transparente</b>, con reglas y separación de compras (entidad pública).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque</h3>
+            <ul>
+              <li><b>Diseño integral:</b> agenda 3 días, tracks, guion/escaleta, formatos (keynote/panel/taller/networking).</li>
+              <li><b>Gestión de ponentes:</b> identificación, negociación, confirmación formal, itinerarios, viáticos, speaker care, plan de reemplazos.</li>
+              <li><b>Producción técnica:</b> A/V, iluminación, pantallas, streaming, grabación y fotografía; traducción simultánea según idiomas.</li>
+              <li><b>Logística:</b> local (2–3 alternativas), registro/acreditación, señalética, staff, protocolo, seguridad, catering 3 días.</li>
+              <li><b>Comunicaciones:</b> branding, piezas digitales/impresas, prensa, memoria del evento y publicación post-evento.</li>
+              <li><b>Repositorio final:</b> M365 (SharePoint/Stream/Teams según TIC) con permisos, estructura y retención.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables del proveedor</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Plan maestro del evento (agenda, cronograma, roles, riesgos y plan de contingencia).</li>
+              <li>Propuesta de local (2–3 alternativas) + plan logístico y de seguridad.</li>
+              <li>Gestión y confirmación formal de ponentes (~30) + itinerarios + soporte.</li>
+              <li>Plan de producción técnica (incluye traducción) + ensayo general.</li>
+              <li>Plan de comunicaciones + piezas (digitales e impresas).</li>
+              <li>Ejecución del evento + streaming + grabación + fotografía.</li>
+              <li>Memoria (PDF) + kit de prensa + reporte KPI.</li>
+              <li>Repositorio M365 con videos/fotos/material descargable y permisos.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance: tema central, ejes, perfil público, shortlist ponentes.</td>
+                  <td class="w-fecha">26-02-02 → 26-03-06</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>TDR: requerimientos, entregables, SLAs de producción, criterios evaluación.</td>
+                  <td class="w-fecha">26-03-09 → 26-03-31</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Contratación (Logística + Legal + GCPPI + BIM + Com + Personas).</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación paralela: formalización ponentes, contenidos, difusión, local.</td>
+                  <td class="w-fecha">26-04-06 → 26-09-04</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Producción + evento + postproducción + cierre (memoria, repositorio, KPIs).</td>
+                  <td class="w-fecha">26-09-07 → 26-11-27</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Hitos sugeridos: S1–2 local + agenda v1 + ≥60% ponentes · S3–6 plan streaming/traducción + campaña · S7–9 ≥90% ponentes + ensayos · S10–11 evento + publicación inicial · S12 memoria + kit prensa + repositorio + reporte KPI.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto</h3>
+            <p><b>Presupuesto total:</b> <b>S/. 210,576.00</b></p>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Partida</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                  <th>Incluye</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Producción técnica (A/V/iluminación/pantallas/streaming + grabación)</td>
+                  <td><b>25%</b></td>
+                  <td><b>52,644</b></td>
+                  <td>Operación 3 días + respaldo (grabación local, redundancias recomendadas)</td>
+                </tr>
+                <tr>
+                  <td>Local + implementación logística (montaje, señalética, staff base)</td>
+                  <td><b>25%</b></td>
+                  <td><b>52,644</b></td>
+                  <td>2–3 alternativas y contratación; protocolo y seguridad base</td>
+                </tr>
+                <tr>
+                  <td>Ponentes (pasajes nac/int + viáticos todos + hospedaje internacionales)</td>
+                  <td><b>20%</b></td>
+                  <td><b>42,115</b></td>
+                  <td>Según política de gastos y acuerdos formales</td>
+                </tr>
+                <tr>
+                  <td>Traducción (inglés/portugués)</td>
+                  <td><b>8%</b></td>
+                  <td><b>16,846</b></td>
+                  <td>Intérpretes + equipos/cabina o solución equivalente</td>
+                </tr>
+                <tr>
+                  <td>Comunicaciones y contenidos (branding, piezas, prensa, memoria)</td>
+                  <td><b>10%</b></td>
+                  <td><b>21,058</b></td>
+                  <td>Kit prensa + memoria + piezas digitales/impresas</td>
+                </tr>
+                <tr>
+                  <td>Catering (3 días)</td>
+                  <td><b>9%</b></td>
+                  <td><b>18,952</b></td>
+                  <td>Coffee breaks/almuerzos según agenda</td>
+                </tr>
+                <tr>
+                  <td>Contingencia</td>
+                  <td><b>3%</b></td>
+                  <td><b>6,317</b></td>
+                  <td>Variaciones y emergencias</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚖️</span>Patrocinio (entidad pública) — regla de juego</h3>
+            <ul>
+              <li>Programa de auspicios con categorías y beneficios predefinidos (logo, stand, mención), <b>sin influencia en compras</b>.</li>
+              <li>Convocatoria pública/condiciones y plazos; criterios objetivos; neutralidad de marca.</li>
+              <li>Separación total entre auspicio y contratación pública (sin ventajas en licitaciones).</li>
+              <li>Legal revisa: uso de marca, cesión de imagen, protección de datos (asistentes), límites de contraprestaciones.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Cancelación de ponentes (especialmente internacionales)</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: contratos con reemplazo; ponente alterno; opción remoto por streaming.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Fallas técnicas de streaming/traducción</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: ensayo general; redundancia de internet; grabación local; soporte técnico dedicado.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Desviación de costos (viajes/local/catering)</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: presupuesto por partidas; cotización múltiple; topes por ponente; control de cambios.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Bajo aforo / poca asistencia</b> (Media/Media).</p>
+                <p class="hint">Mitigación: plan de difusión por oleadas + alianzas con universidades/gremios + agenda atractiva.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Riesgo reputacional por contenido poco sólido</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: comité curador (BIM + GCPPI + Comunicaciones) revisa abstracts y coherencia temática.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Patrocinio en entidad pública (cumplimiento)</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: mecanismo transparente + separación compras + reglas de neutralidad (Legal).</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs)</h3>
+            <ul>
+              <li><b>KPI1 Asistencia presencial:</b> meta ~<b>200</b>.</li>
+              <li><b>KPI2 Pico streaming:</b> meta ≥ <b>1000</b>.</li>
+              <li><b>KPI3 Visualizaciones on-demand (30 días):</b> meta a definir (según estrategia de publicación).</li>
+              <li><b>KPI4 Satisfacción:</b> ≥ <b>4/5</b> o NPS positivo.</li>
+              <li><b>KPI5 Ejecución sin incidentes críticos:</b> ≥ <b>95%</b> de agenda ejecutada sin fallas mayores.</li>
+              <li><b>KPI6 Prensa/alcance digital:</b> # menciones, piezas publicadas y alcance (según plan Com).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación</h3>
+            <ul>
+              <li><b>Pre-evento:</b> checklist de readiness (local, A/V, internet, traducción, seguridad, señalética, ensayos) con responsables.</li>
+              <li><b>Curaduría:</b> validación de abstracts, coherencia por tracks y calidad del contenido (comité curador).</li>
+              <li><b>Operación:</b> ensayo general (streaming + traducción + grabación) con plan de contingencia.</li>
+              <li><b>Post:</b> memoria + kit prensa + repositorio M365 con permisos y retención validados por TIC.</li>
+              <li><b>KPIs:</b> reporte KPI (asistencia, streaming, satisfacción, incidentes, alcance) + lecciones aprendidas.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Agenda 3 días aprobada (tema central + tracks) y coherente con objetivos de posicionamiento.</li>
+              <li>Ponentes confirmados formalmente (meta: ≥90% antes de la ejecución) con plan de reemplazos.</li>
+              <li>Producción técnica y streaming operativos con redundancias (ensayo general aprobado).</li>
+              <li>Traducción simultánea disponible según agenda (ES/PT/EN) sin incidentes críticos.</li>
+              <li>Evento ejecutado con control de seguridad/protocolo y sin incidentes mayores.</li>
+              <li>Memoria + kit de prensa + repositorio institucional M365 entregados con permisos/retención definidos.</li>
+              <li>Reporte KPI final y lecciones aprendidas registradas (para CONEBIM siguiente).</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua</h3>
+            <ul>
+              <li>Publicación progresiva on-demand (clips por track) para extender alcance 30–90 días.</li>
+              <li>Consolidar base de datos de comunidad (contactos, universidades, gremios) con cumplimiento de datos personales (Legal).</li>
+              <li>Reutilizar assets: plantillas, checklist, contratos, runbook técnico y repositorio para futuras ediciones.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Com + Personas + Logística + Legal · Aprobó: <b>GCPPI</b> · V°B° reputacional: <b>GG</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-02-02 · Objetivo: 2026-11-27</div>
+    </div>
+
+  </div>
+</body>
+</html>

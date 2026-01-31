@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — PER-2</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do   .colhead{ background: var(--d); }
+    .act  .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:76px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height:1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">PER-2</div>
+        <div class="subtitle">
+          Capacitación en Gestión de Proyectos (PMI + BIM) — HDNA y ELCTO. Programa virtual sincrónico (45h por empresa) con evaluación, certificación y repositorio final institucional.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Empresas: HDNA (40) + ELCTO (40)</span>
+          <span class="chip">Modalidad: virtual en vivo</span>
+          <span class="chip">Horas: 45 por empresa</span>
+          <span class="chip">Evaluación: nota ≥15 + asistencia ≥80%</span>
+          <span class="chip">OEI 12: Gestión del portafolio</span>
+          <span class="chip">Presupuesto total: S/. 71,812.00</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · GCPPI · Personas · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-01-19</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-03-27</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Ejecutar <b>2 programas equivalentes</b> (HDNA y ELCTO) de <b>45 horas</b> cada uno para fortalecer competencias de <b>Gestión de Proyectos</b>
+              (PMBOK 7 + portafolios + PMO) e introducir <b>BIM aplicado a gestión de la información</b> (enfoque metodológico, sin software),
+              contribuyendo al <b>OEI 12</b>: mejorar la gestión del portafolio de proyectos.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Variabilidad en prácticas de gestión (alcance, cronograma, riesgos, procura, stakeholders) afecta consistencia del portafolio.</li>
+              <li>Necesidad de reforzar <b>gobernanza</b> (PMO/portafolios) y criterios comunes de seguimiento.</li>
+              <li>BIM, como gestión de información, reduce retrabajos y mejora trazabilidad en supervisión de entregables.</li>
+              <li>Rotación de personal: se requiere nivelación de capacidades y resiliencia organizacional.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN:</b> 2 programas virtuales (1 por empresa) para <b>40 participantes</b> cada uno; dictado en vivo, materiales 24h antes, grabaciones 48h después, evaluaciones y encuestas por tema, certificados firmados por proveedor, registro de asistencia y repositorio final descargable por empresa.</p>
+            <p><b>OUT:</b> licenciamiento y entrenamiento de software BIM específico; talleres de modelado; implementación de procesos PMO (solo capacitación); soporte continuo tipo mesa de ayuda post-cierre (solo handover y repositorio).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧭</span>Contenido (45h por empresa)</h3>
+            <ul>
+              <li><b>Introducción a GP:</b> 9h</li>
+              <li><b>Gestión de proyectos:</b> 18h</li>
+              <li><b>PMO:</b> 9h</li>
+              <li><b>BIM (metodológico):</b> 9h (gestión de información y supervisión de modelos/entregables desde CDE)</li>
+              <li><b>Evaluación:</b> examen + encuesta de satisfacción por tema; certificado con horas/temas/nota.</li>
+            </ul>
+           </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados y RACI</h3>
+            <ul>
+              <li><b>R:</b> BIM (valida enfoque BIM metodológico y coherencia con supervisión) + Proveedor (dictado, materiales, evaluación, certificación).</li>
+              <li><b>A:</b> <b>GCPPI</b> (acepta entregables del servicio y cierre contractual).</li>
+              <li><b>C:</b> Personas (gestión de participantes y coordinación), Logística (coordinación operativa/contractual), JAP (seguimiento del PD).</li>
+              <li><b>I:</b> GR/GG (seguimiento de OEI/portafolio).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>Horario: tardes, L–V interdiario, <b>3 veces/semana</b>, <b>≥2h/sesión</b> (referencia) — el proveedor propone el cronograma final.</li>
+              <li>Inicio: <b>al día siguiente</b> de la Orden de Proceder (OP).</li>
+              <li>El proveedor entrega cronograma a los <b>5 días</b> de recibida la OP para aprobación de la empresa.</li>
+              <li>Reprogramaciones: la empresa puede postergar con <b>24h</b> de anticipación; el proveedor actualiza cronograma.</li>
+              <li>Asistencia mínima 80% y nota mínima 15 para certificación.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Enfoque de implementación</h3>
+            <ul>
+              <li>Contratar empresa especializada con facilitadores: PMI/PMBOK 7, portafolios/PMO y BIM metodológico.</li>
+              <li>Ejecución virtual sincrónica con plataforma del consultor + soporte técnico.</li>
+              <li>Diseño instruccional: reordenamiento del temario para mejor comprensión, sin omitir horas/temas obligatorios.</li>
+              <li>Gestión de evidencias: materiales 24h antes, grabaciones 48h después, asistencia, evaluaciones, encuestas y certificados.</li>
+              <li>Repositorio final por empresa: descargable y completo (materiales + grabaciones + resultados).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma oficial)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>TDR</b></td>
+                  <td>Términos de referencia: alcance, horas, modalidad, entregables, evaluación/certificación, SLAs de plataforma.</td>
+                  <td class="w-fecha">26-01-19 → 26-01-30</td>
+                </tr>
+                <tr>
+                  <td><b>Contratación</b></td>
+                  <td>Proceso de contratación y adjudicación.</td>
+                  <td class="w-fecha">26-02-02 → 26-02-27</td>
+                </tr>
+                <tr>
+                  <td><b>Recopilación</b></td>
+                  <td>Listado participantes (40+40), lineamientos, validación logística, OP.</td>
+                  <td class="w-fecha">26-02-02 → 26-02-27</td>
+                </tr>
+                <tr>
+                  <td><b>Ejecución</b></td>
+                  <td>Dictado, evaluaciones, certificación y repositorio final.</td>
+                  <td class="w-fecha">26-03-02 → 26-03-27</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⏱️</span>Condición crítica: 45h en 4 semanas</h3>
+            <p>
+              La ejecución contractual está definida del <b>02/03 al 27/03</b> (~4 semanas). Para cumplir <b>45h</b> por empresa, el TDR debe exigir
+              un cronograma que garantice horas mediante una de estas vías:
+            </p>
+            <ul style="margin-top:8px;">
+              <li><b>Opción A:</b> sesiones más largas (p. ej. 4h/sesión).</li>
+              <li><b>Opción B:</b> mayor frecuencia (4–5 sesiones/semana).</li>
+              <li><b>Opción C:</b> extensión de ejecución (si normativamente procede) — solo si se autoriza.</li>
+            </ul>
+            <p class="hint" style="margin-top:8px;">Regla TDR: el proveedor presenta el cronograma a los 5 días de la OP y requiere aprobación de la empresa antes de iniciar el dictado.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables del servicio</h3>
+            <ul>
+              <li>Cronograma aprobado (entregado ≤5 días tras OP).</li>
+              <li>Sílabo reordenado y detallado por tema (aprobado).</li>
+              <li>Materiales por sesión cargados 24h antes (evidencia).</li>
+              <li>Grabaciones HD por sesión cargadas 48h después.</li>
+              <li>Exámenes + encuestas por tema (resultados exportables).</li>
+              <li>Registro de asistencia por participante.</li>
+              <li>Certificados firmados por proveedor (horas, temas, nota, datos del participante).</li>
+              <li>Paquete final por empresa (repositorio descargable con todo lo anterior).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto</h3>
+            <p><b>Presupuesto por empresa:</b> <b>S/. 35,906.00</b> · <b>Total (HDNA + ELCTO):</b> <b>S/. 71,812.00</b></p>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente (por empresa)</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:150px;">Monto (S/.)</th>
+                  <th>Incluye</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Facilitación 45h (PMI + portafolios + PMO + BIM metodológico)</td>
+                  <td><b>55%</b></td>
+                  <td><b>19,748</b></td>
+                  <td>Dictado + preparación</td>
+                </tr>
+                <tr>
+                  <td>Diseño instruccional</td>
+                  <td><b>12%</b></td>
+                  <td><b>4,309</b></td>
+                  <td>Sílabo final y plan de sesiones</td>
+                </tr>
+                <tr>
+                  <td>Plataforma + soporte técnico + grabación HD</td>
+                  <td><b>15%</b></td>
+                  <td><b>5,386</b></td>
+                  <td>Sesiones en vivo + cargas 48h</td>
+                </tr>
+                <tr>
+                  <td>Evaluaciones + encuestas + control de asistencia</td>
+                  <td><b>10%</b></td>
+                  <td><b>3,591</b></td>
+                  <td>Exámenes por tema y reportes</td>
+                </tr>
+                <tr>
+                  <td>Certificación (emisión y registro)</td>
+                  <td><b>5%</b></td>
+                  <td><b>1,795</b></td>
+                  <td>Certificados firmados</td>
+                </tr>
+                <tr>
+                  <td>Contingencia operativa</td>
+                  <td><b>3%</b></td>
+                  <td><b>1,077</b></td>
+                  <td>Reprogramaciones/ajustes</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Adquisición: servicio de capacitación (incluye plataforma, hosting, grabación, evaluación y certificación). No se requieren licencias BIM/software adicional (enfoque metodológico).</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>No completar 45h dentro de 02/03–27/03</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: en TDR exigir cronograma que cumpla horas (sesiones más largas o mayor frecuencia) + aprobación de la empresa; condición de inicio: cronograma aprobado.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Reprogramaciones con 24h afectan el plan</b> (Media/Media).</p>
+                <p class="hint">Mitigación: semanas buffer + reglas de reprogramación automática y comunicación; consolidación quincenal del avance por empresa.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Participación baja por carga laboral</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: horario fijo tarde + recordatorios + grabaciones; seguimiento de asistencia por Personas; escalamiento de ausencias críticas.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Calidad variable del facilitador</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: CV/experiencia mínima + sesión demo/piloto + evaluación por tema con gatillos de corrección/cambio de facilitador.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Fallas de plataforma/grabación</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: SLA de plataforma + backup de grabación local + repositorio de entrega con verificación de integridad.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs)</h3>
+            <ul>
+              <li><b>KPI1 Asistencia:</b> ≥ <b>80%</b> de participantes con asistencia ≥80%.</li>
+              <li><b>KPI2 Aprobación:</b> ≥ <b>80%</b> de participantes con nota ≥15.</li>
+              <li><b>KPI3 Satisfacción:</b> promedio ≥ <b>4/5</b> por tema (encuesta).</li>
+              <li><b>KPI4 Cumplimiento de evidencias:</b> 100% materiales 24h antes y 100% grabaciones 48h después (por sesión).</li>
+              <li><b>KPI5 Entrega final:</b> repositorio completo por empresa entregado y validado al cierre.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación</h3>
+            <ul>
+              <li><b>Previo al inicio:</b> cronograma aprobado + listado final de participantes (40 por empresa) + canal de consultas habilitado.</li>
+              <li><b>Por sesión:</b> evidencia de material (≥24h antes) y grabación (≤48h después) + registro de asistencia.</li>
+              <li><b>Por tema:</b> examen y encuesta con resultados exportables.</li>
+              <li><b>Al cierre:</b> certificados emitidos (según regla) + reporte consolidado (asistencia/nota/satisfacción) + repositorio final descargable.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Cronograma aprobado entregado ≤5 días tras OP, garantizando 45h dentro del periodo contractual (o cumpliendo condición A/B/C definida en TDR).</li>
+              <li>Sílabo reordenado y detallado aprobado por la empresa (sin reducir horas/temas).</li>
+              <li>Materiales por sesión cargados 24h antes y grabaciones HD 48h después (evidencias verificables).</li>
+              <li>Exámenes + encuestas por tema con resultados exportables y trazables.</li>
+              <li>Registro de asistencia individual por participante (HDNA y ELCTO).</li>
+              <li>Certificados firmados por el proveedor con horas/temas/nota/datos del participante.</li>
+              <li>Paquete final entregado por empresa (repositorio descargable con todos los artefactos).</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-servicio)</h3>
+            <ul>
+              <li>Lecciones aprendidas: consolidar feedback por tema y ajustar futuros programas (temario, carga horaria, ritmo).</li>
+              <li>Ruta de madurez: usar resultados para definir refuerzos (módulos cortos) y estandarizar plantillas de reportes/seguimiento.</li>
+              <li>Reutilización: repositorios finales quedan como base para inducción de nuevos ingresos y contingencia por rotación.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Personas + Logística · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-01-19 · Objetivo: 2026-03-27</div>
+    </div>
+
+  </div>
+</body>
+</html>

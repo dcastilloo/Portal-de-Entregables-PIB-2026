@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — PER-4</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do .colhead{ background: var(--d); }
+    .act .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:64px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height: 1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">PER-4</div>
+        <div class="subtitle">
+          Aula virtual para formación BIM — Implementar un aula asíncrona en <b>Microsoft 365</b> para formar consultores e internos en el estándar Distriluz de ejecución y revisión BIM desde el <b>CDE (ACC)</b>, con <b>quizzes</b>, <b>certificación</b>, métricas y continuidad bajo cuentas institucionales.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Plataforma: M365 (SharePoint + Forms + Lists/Automate)</span>
+          <span class="chip">Lab: ACC Training (sandbox)</span>
+          <span class="chip">Presupuesto: S/. 17,548.00</span>
+          <span class="chip">MVP: configuración + operación (sin contenidos)</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Logística · Personas · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-07-06</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-10-23</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Implementar un <b>aula virtual asíncrona</b> en Microsoft 365 para formar a <b>consultores</b> e <b>internos</b> en el estándar Distriluz de ejecución y revisión BIM desde el CDE (ACC), con <b>quizzes</b>, <b>certificación</b> y <b>métricas</b> de avance, asegurando <b>continuidad institucional</b> (sin dependencia de cuentas personales).
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Alta <b>variabilidad</b> en entregables y revisiones por falta de formación homogénea en el estándar ACC.</li>
+              <li>Dependencia de conocimiento tácito y riesgo por <b>rotación</b> (internos) y alta diversidad de consultores.</li>
+              <li>Necesidad de evidencia: quién se capacitó, cuándo, con qué versión de ruta y con qué resultado.</li>
+              <li>Riesgo de continuidad si el aula queda en cuenta personal que luego se elimina.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP):</b> configuración del aula en M365 (SharePoint portal, repositorio, permisos/retención); rutas formativas A (consultores) y B (internos) como <b>estructura</b> (sin contenidos); quizzes por módulo + examen final; certificación automática (PDF/constancia) con reglas; registro de evidencias; sandbox ACC “Training” con enlaces; KPIs + tablero base; manuales + handover; gobierno con service account/grupo M365 y owners redundantes validado con TIC.</p>
+            <p><b>OUT (MVP):</b> producción de contenidos (videos/manuales/guías) y exámenes “académicos” avanzados; mesa de ayuda continua; VDI/lab Revit; cambios mayores al licenciamiento M365 (solo si TIC aprueba y se trata como decisión en TDR).</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM (curaduría de rutas, criterios de certificación, operación del aula).</li>
+              <li><b>A:</b> GCPPI (aceptación del MVP y criterios de éxito).</li>
+              <li><b>C:</b> <b>TIC</b> (licencias, seguridad, service account, retención, gobierno M365/ACC) · Personas (adopción/capacitación) · Logística (contratación) · JAP (coordinación).</li>
+              <li><b>I:</b> GR/GG (visibilidad de avance y cumplimiento).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>Este PD <b>no desarrolla contenidos</b>; solo deja “cajones/módulos” listos para carga posterior por BIM.</li>
+              <li>Se prioriza un diseño <b>low license</b> (SharePoint + Forms + Lists) si hay brechas de licenciamiento.</li>
+              <li>Acceso consultores como <b>guest</b> bajo grupos y permisos mínimos (sin links abiertos).</li>
+              <li>Sandbox ACC separado, sin datos reales (cumplimiento seguridad).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
+            <ul>
+              <li><b>Portal del aula:</b> SharePoint como sitio principal con estructura de cursos, rutas y navegación.</li>
+              <li><b>Repositorio:</b> biblioteca de materiales con permisos y control de descargas según política TIC.</li>
+              <li><b>Comunicación:</b> Teams opcional (avisos/soporte) sin requerir sincrónico.</li>
+              <li><b>Rutas:</b> Ruta A (Consultores) y Ruta B (Internos) como estructura lista para cargar contenidos.</li>
+              <li><b>Evaluación:</b> Forms quizzes por módulo + examen final; reglas de aprobación.</li>
+              <li><b>Certificación:</b> constancia PDF automática + registro de evidencias (fecha, usuario, versión de ruta).</li>
+              <li><b>Laboratorio:</b> ACC “Training” (sandbox) con enlaces desde el aula y accesos diferenciados.</li>
+              <li><b>Métricas:</b> KPIs (finalización, notas, usuarios, horas, satisfacción) + tablero base.</li>
+              <li><b>Continuidad:</b> service account/grupo M365 + owners redundantes + retención (TIC).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Portal “<b>Aula BIM Distriluz</b>” en M365 (SharePoint) con estructura lista.</li>
+              <li>Ruta A (Consultores) y Ruta B (Internos) configuradas (módulos/cajones listos).</li>
+              <li>Quizzes + examen final por ruta + reglas de aprobación + evidencias.</li>
+              <li>Certificado automático (PDF/constancia) + registro histórico (usuario, fecha, versión).</li>
+              <li>Sandbox ACC “Training” (proyecto/carpeta) enlazado desde el aula + permisos diferenciados.</li>
+              <li>Tablero KPI (Power BI o reporte M365) conectado a registro de cursos/quizzes.</li>
+              <li>Manual admin + manual usuario + checklist de continuidad (owners, retención, backups/recuperación si aplica) + handover.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>TDR</b></td>
+                  <td>Alcance MVP, licencias, seguridad/continuidad, criterios de certificación y KPIs.</td>
+                  <td class="w-fecha">26-07-06 → 26-07-17</td>
+                </tr>
+                <tr>
+                  <td><b>Compra</b></td>
+                  <td>Contratación del servicio (Logística) + validación TIC de gobierno M365/ACC.</td>
+                  <td class="w-fecha">26-07-20 → 26-08-14</td>
+                </tr>
+                <tr>
+                  <td><b>Ejecución</b></td>
+                  <td>Configuración aula + quizzes/certificación + sandbox ACC + KPI + piloto + handover.</td>
+                  <td class="w-fecha">26-08-17 → 26-10-23</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Hitos sugeridos: Sem 1 validación TIC + arquitectura · Sem 2–3 SharePoint/Teams + rutas + registro · Sem 4–5 quizzes + certificados + sandbox ACC · Sem 6–8 tablero KPI + piloto (internos + 1 cohorte consultores) + ajustes + handover.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
+            <ul>
+              <li><b>Presupuesto total:</b> <b>S/. 17,548.00</b> (configuración, automatizaciones, reportería base, documentación y handover).</li>
+              <li><b>Ideal:</b> sin nuevas licencias (usar M365 disponible). Si TIC detecta brecha, se registra como decisión/restricción en TDR.</li>
+              <li><b>Proveedor:</b> servicio de configuración M365 + Power Platform + BI básico.</li>
+            </ul>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:160px;">Monto (S/.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Configuración aula en M365 + gobierno (service account, permisos, retención)</td><td><b>30%</b></td><td><b>5,264</b></td></tr>
+                <tr><td>Estructura rutas + automatización matrícula/registro (Lists/Power Automate)</td><td><b>25%</b></td><td><b>4,387</b></td></tr>
+                <tr><td>Quizzes + certificación (Forms + constancia + evidencias)</td><td><b>20%</b></td><td><b>3,510</b></td></tr>
+                <tr><td>Reportería (KPIs) + tablero base (Power BI o equivalente)</td><td><b>15%</b></td><td><b>2,632</b></td></tr>
+                <tr><td>Documentación + handover (manual admin + manual usuario)</td><td><b>10%</b></td><td><b>1,755</b></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📣</span>Comunicaciones</h3>
+            <ul>
+              <li><b>Semanal:</b> seguimiento BIM + Proveedor + TIC (seguridad/continuidad) + Personas (adopción) + bloqueos.</li>
+              <li><b>Piloto:</b> 1 cohorte internos + 1 cohorte consultores; retroalimentación y ajustes (sem 6–8).</li>
+              <li><b>Canales:</b> Teams (avisos), SharePoint (contenido), ACC Training (lab), actas en repositorio institucional.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Licenciamiento M365 insuficiente</b> para alguna funcionalidad (Media/Alta).</p>
+                <p class="hint">Mitigación: validación temprana con TIC; alternativa “low license” (SharePoint + Forms + Lists). Dueño: TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Contenido/operación en cuenta personal que luego se elimina</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: service account/grupo M365, owners redundantes, políticas de retención. Dueño: TIC + BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Acceso consultores (guest) y fuga de información</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: grupos y permisos mínimos, carpetas separadas, revisión TIC, no publicar links abiertos. Dueño: TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Laboratorio ACC expone información sensible</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: sandbox separado sin datos reales; permisos controlados; plantilla de entrenamiento. Dueño: BIM + TIC.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Baja adopción</b> (Media/Media).</p>
+                <p class="hint">Mitigación: piloto por cohortes, comunicación, champions; certificado obligatorio para roles/contratos donde aplique. Dueño: Personas + BIM.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Certificación “sin control”</b> (Media/Media).</p>
+                <p class="hint">Mitigación: nota mínima + banco de preguntas + reintentos limitados + auditoría de resultados. Dueño: BIM + GCPPI.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs)</h3>
+            <ul>
+              <li><b>KPI1 Finalización por ruta (%):</b> meta inicial <b>60–70%</b> en primeras cohortes.</li>
+              <li><b>KPI2 Aprobación (%):</b> % aprobados con nota ≥ umbral definido por BIM/GCPPI.</li>
+              <li><b>KPI3 Usuarios capacitados:</b> internos y consultores por cohorte/mes.</li>
+              <li><b>KPI4 Horas de formación:</b> consumo por ruta y por perfil.</li>
+              <li><b>KPI5 Satisfacción:</b> encuesta post-curso (NPS o escala 1–5) con mejora por iteración.</li>
+              <li><b>KPI6 Impacto operativo (proxy):</b> reducción de observaciones por desconocimiento del estándar y mejora en tiempos de revisión (medición por muestreo).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación</h3>
+            <ul>
+              <li><b>Gobernanza:</b> verificación de service account, owners redundantes, retención y permisos (TIC).</li>
+              <li><b>Seguridad:</b> pruebas de acceso guest y no-exposición de links; revisión de repositorios (TIC).</li>
+              <li><b>Operación:</b> pruebas end-to-end: matrícula → curso → quiz → certificado → registro → dashboard.</li>
+              <li><b>Piloto:</b> cohortes internas + consultores; registrar hallazgos y backlog de mejoras.</li>
+              <li><b>Handover:</b> checklist de continuidad (cambio de owners, respaldo de listas, recuperación, runbook básico).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>Portal SharePoint operativo con estructura de rutas A/B y repositorios con permisos.</li>
+              <li>Quizzes por módulo + examen final configurados; reglas de aprobación (nota mínima + finalización).</li>
+              <li>Certificado automático + registro de evidencias (usuario, fecha, versión de ruta).</li>
+              <li>Sandbox ACC Training implementado y enlazado desde el aula; accesos diferenciados internos/consultores.</li>
+              <li>Tablero KPI operativo (Power BI o equivalente) conectado al registro de cursos/quizzes.</li>
+              <li>Gobierno validado con TIC: service account/grupo M365, owners redundantes, retención/permisos definidos.</li>
+              <li>Manual admin + manual usuario + acta de handover y piloto (cohortes) con acciones cerradas o plan aceptado por GCPPI.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
+            <ul>
+              <li>Incorporar contenidos por versiones (v1.0, v1.1…) con control de cambios y trazabilidad de ruta.</li>
+              <li>Habilitar rutas adicionales (p.ej., CDE Admin, QA/QC, Modelado redes) según demanda.</li>
+              <li>Integrar métricas con cumplimiento contractual (si Legal/GCPPI lo define) y reforzar adopción.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: TIC + Personas · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-07-06 · Objetivo: 2026-10-23</div>
+    </div>
+
+  </div>
+</body>
+</html>

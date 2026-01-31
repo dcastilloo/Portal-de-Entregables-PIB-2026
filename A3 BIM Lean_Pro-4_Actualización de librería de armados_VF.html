@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A3 Lean BIM — PRO-4</title>
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --line:#1d1d1d;
+      --soft:#e9e9e9;
+      --p:#f6fbff;
+      --d:#fff7f0;
+      --ca:#f7fff6;
+      --chip:#f2f2f2;
+      --ok:#1a7f37;
+      --warn:#b54708;
+      --bad:#b42318;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html, body{ height:100%; }
+    body{
+      font-family: var(--font);
+      color: var(--ink);
+      margin:0;
+      background:#fff;
+      overflow:hidden; /* scroll por columna */
+    }
+
+    .sheet{
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:flex-start;
+      border:2px solid var(--line);
+      padding:14px;
+      border-radius:16px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .title{ font-size:18pt; font-weight:800; line-height:1.05; }
+    .subtitle{ font-size:10pt; color:var(--muted); line-height:1.25; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip{
+      padding:6px 10px;
+      border:1px solid var(--soft);
+      background:var(--chip);
+      border-radius:999px;
+      font-size:8.5pt;
+      color:#333;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 16px;
+      width:100%;
+      align-self:start;
+    }
+
+    .kv{ display:flex; gap:8px; align-items:baseline; white-space:nowrap; min-width:0; }
+    .k{ font-size:9pt; color:var(--muted); font-weight:700; }
+    .v{ font-size:10pt; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
+      align-items:stretch;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .col{
+      border:2px solid var(--line);
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      min-height:0;
+    }
+
+    .colhead{
+      padding:12px 14px;
+      font-weight:900;
+      letter-spacing:.3px;
+      border-bottom:2px solid var(--line);
+      font-size:12pt;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .plan .colhead{ background: var(--p); }
+    .do   .colhead{ background: var(--d); }
+    .act  .colhead{ background: var(--ca); }
+
+    .sections{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+
+    /* Scrollbars visibles */
+    .sections{ scrollbar-width: thin; scrollbar-color: rgba(17,17,17,.35) rgba(0,0,0,.06); }
+    .sections::-webkit-scrollbar{ width: 10px; }
+    .sections::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+    .sections::-webkit-scrollbar-thumb{ background: rgba(17,17,17,.30); border-radius: 999px; border: 2px solid rgba(0,0,0,.05); }
+    .sections::-webkit-scrollbar-thumb:hover{ background: rgba(17,17,17,.45); }
+
+    .sec{ border:1px solid var(--soft); border-radius:14px; padding:10px 12px; background:#fff; }
+
+    .sec h3{
+      margin:0 0 8px 0;
+      font-size:10pt;
+      font-weight:900;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .sec h3 .ico{ width:18px; display:inline-flex; justify-content:center; line-height:1; }
+
+    .sec p, .sec li{ margin:0; font-size:9pt; line-height:1.25; color:#1b1b1b; }
+    .sec ul{ margin:0; padding-left:18px; }
+
+    table.tbl{ width:100%; border-collapse:collapse; font-size:8.6pt; line-height:1.2; }
+    .tbl th, .tbl td{ border:1px solid var(--soft); padding:6px 7px; vertical-align:top; }
+    .tbl th{ background:#fafafa; font-weight:900; }
+    .tbl .w-hito{ width:76px; }
+    .tbl .w-fecha{ width:170px; white-space:nowrap; }
+
+    .hint{ color: var(--muted); font-weight:600; }
+
+    /* Riesgos (sin traslape) */
+    .riskrow{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+    .riskrow > div:last-child{ min-width:0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:8pt;
+      font-weight:900;
+      border:1px solid var(--soft);
+      width:56px;
+      flex: 0 0 56px;
+      line-height:1;
+    }
+    .b-green{ background:#e9f9ee; color:var(--ok); border-color:#bfe9c9; }
+    .b-amber{ background:#fff3e6; color:var(--warn); border-color:#ffd7b0; }
+    .b-red{ background:#ffe9e7; color:var(--bad); border-color:#ffc6c0; }
+
+    [contenteditable="true"]:focus{
+      outline: 2px dashed #3b82f6;
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+
+    .printnote{
+      margin-top:2px;
+      font-size:8pt;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    @media print{
+      @page { size: A3 landscape; margin: 10mm; }
+      html, body{ height:auto; }
+      body{ background:#fff; overflow:visible; }
+      .sheet{
+        width: 420mm;
+        height: 297mm;
+        min-height:auto;
+        padding:10mm;
+        gap:6mm;
+      }
+      .topbar{ gap:10mm; padding:6mm; border-radius:6mm; }
+      .grid{ grid-template-columns: 1fr 1fr 1fr; gap:6mm; }
+      .col{ border-radius:6mm; }
+      .colhead{ padding:4mm 5mm; }
+      .sections{ overflow:visible; padding:4mm 5mm; }
+      .sec{ border-radius:4mm; padding:3mm 3.5mm; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+
+    <!-- ENCABEZADO -->
+    <div class="topbar" contenteditable="true">
+      <div class="brand">
+        <div class="title">PRO-4</div>
+        <div class="subtitle">
+          Actualización de librería de armados (Revit) — Versión 2. Saneamiento geométrico + metrados + parámetros estándar (EST-1/2/3) + template corporativo + “Partida”, para habilitar automatización TEC-4.
+        </div>
+        <div class="chips">
+          <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
+          <span class="chip">Área: BIM</span>
+          <span class="chip">Volumen: 187 armados</span>
+          <span class="chip">Materiales base: 379</span>
+          <span class="chip">RVT (lámina+metrado): 187</span>
+          <span class="chip">Dependencia: diccionario EST-1/2/3 (baseline 2026-02-23)</span>
+          <span class="chip">Presupuesto: S/. 35,096.00</span>
+          <span class="chip">Salida: v2 + kit v2.1 (agosto)</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="kv"><span class="k">Owner:</span><span class="v">Coordinador Corporativo BIM</span></div>
+        <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · Técnica · GCPPI · Logística · Proveedor</span></div>
+        <div class="kv"><span class="k">Inicio:</span><span class="v">2026-01-26</span></div>
+        <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-05-08</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+      </div>
+    </div>
+
+    <!-- 3 COLUMNAS -->
+    <div class="grid">
+
+      <!-- PLAN -->
+      <section class="col plan">
+        <div class="colhead">PLAN (P) <span class="hint">(definir)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🎯</span>Objetivo</h3>
+            <p>
+              Actualizar la librería de armados <b>v1 → v2</b> con calidad y estandarización suficiente para uso productivo, corrigiendo <b>geometría</b> y <b>metrados</b>, incorporando parámetros del estándar (<b>EST-1/2/3</b>) y el parámetro <b>“Partida”</b>, además de entregar un <b>template Revit corporativo</b> y un <b>kit de actualización v2.1</b> para incorporar el catálogo de materiales actualizado de técnica, tentativamente en agosto, sin rehacer la librería.
+            </p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
+            <ul>
+              <li>Librería v1 con <b>errores geométricos</b> y <b>metrados erróneos</b> genera retrabajo e inconsistencias en documentación y cantidades.</li>
+              <li>Sin parámetros estandarizados y materiales normalizados, la automatización <b>TEC-4</b> no puede producir modelos consistentes.</li>
+              <li>No existe un <b>template Revit corporativo</b> para asegurar uniformidad de láminas/metrados.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
+            <ul>
+              <li><b>Armados:</b> 187 (con variabilidad y errores detectables por checklist).</li>
+              <li><b>Materiales/familias base:</b> 379 (nomenclatura y parámetros heterogéneos).</li>
+              <li><b>Riesgo operativo:</b> discrepancias de metrado y observaciones en revisiones internas/consultores.</li>
+              <li><b>Impacto:</b> habilitación parcial o inestable de TEC-4 (dependencia directa de la librería).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
+            <p><b>IN (MVP v2):</b> diagnóstico + baseline de errores; corrección masiva 187 armados (geometría+metrados); estandarización 379 materiales; incorporación parámetros EST-1/2/3 (baseline 2026-02-23); template Revit corporativo; parámetro “Partida” con estructura inicial; empaquetizado, versionado, changelog, guía y checklist QA; kit de actualización v2.1 (agosto).</p>
+            <p><b>OUT:</b> rediseño del estándar EST-1/2/3 (se consume diccionario congelado); desarrollo TEC-4 (solo pruebas de compatibilidad por muestra); migración a plataformas distintas de Revit.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
+            <ul>
+              <li>El diccionario de parámetros <b>EST-1/2/3</b> se <b>congela</b> al <b>2026-02-23</b> como baseline del servicio (control de cambios formal).</li>
+              <li>Técnica actualizará materiales en agosto → se requiere <b>kit v2.1</b> para incorporar sin retrabajo mayor.</li>
+              <li>Por presupuesto y volumen, se trabaja en modo <b>industrial</b>: correcciones por lotes, validación automatizable y QA por criterios críticos + muestreo.</li>
+              <li>El parámetro “Partida” debe quedar utilizable <b>desde el día 1</b> (no se acepta entrega “vacía”).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">👥</span>Interesados y RACI (macro)</h3>
+            <ul>
+              <li><b>R:</b> BIM (estándar, QA final, aceptación) + Proveedor (producción y QA del contenido).</li>
+              <li><b>A:</b> <b>GCPPI</b> (aprobación y control del PD).</li>
+              <li><b>C:</b> Técnica (validación técnica, insumo catálogo agosto), Logística (contratación), JAP (coordinación).</li>
+              <li><b>I:</b> GR / GG (seguimiento según gobernanza del portafolio).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- DO -->
+      <section class="col do">
+        <div class="colhead">DO (D) <span class="hint">(implementar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛠️</span>Solución / Enfoque</h3>
+            <ul>
+              <li><b>Diagnóstico</b>: inventario, clasificación por criticidad y baseline de errores (geométricos y metrados).</li>
+              <li><b>Corrección masiva</b>: 187 armados (familias, anidamientos, conectividad si aplica) + corrección de metrados (parámetros/fórmulas/cantidades).</li>
+              <li><b>Estandarización</b>: aplicar parámetros EST-1/2/3 a materiales y armados (shared parameters, tipos, unidades, obligatoriedad).</li>
+              <li><b>Template corporativo</b>: shared params, nomenclatura base, subcategorías, materiales, estilos mínimos para láminas/metrados.</li>
+              <li><b>Partidas</b>: estructura inicial + mapeo del parámetro “Partida” + guía.</li>
+              <li><b>Paquetización</b>: versionado, estructura carpetas, changelog, checklist QA y guía de uso.</li>
+              <li><b>Kit v2.1</b>: procedimiento/mapeos para incorporar catálogo de agosto con validación.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📦</span>Entregables</h3>
+            <ul>
+              <li><b>RFA</b> materiales estandarizados (set v2).</li>
+              <li><b>RFA</b> armados v2 (187).</li>
+              <li><b>RVT</b> por armado con lámina y metrado (187).</li>
+              <li><b>Template Revit corporativo</b> + shared parameters.</li>
+              <li><b>Checklist QA</b> + reporte de conformidad (errores corregidos y cobertura de parámetros).</li>
+              <li><b>Kit v2.1</b> (agosto): procedimiento + mapeos + validación.</li>
+              <li><b>Guía de uso y versionado</b>: estructura carpetas, nomenclatura, control de cambios.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🗓️</span>Plan de trabajo (cronograma oficial)</h3>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="w-hito">Fase</th>
+                  <th>Resultado</th>
+                  <th class="w-fecha">Fechas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1</b></td>
+                  <td>Definición de alcance (criterios de QA, precisión de metrados, baseline de diccionario).</td>
+                  <td class="w-fecha">26-01-26 → 26-02-13</td>
+                </tr>
+                <tr>
+                  <td><b>2</b></td>
+                  <td>Elaboración TDR (incluye congelamiento baseline EST al 2026-02-23).</td>
+                  <td class="w-fecha">26-02-16 → 26-02-27</td>
+                </tr>
+                <tr>
+                  <td><b>3</b></td>
+                  <td>Contratación.</td>
+                  <td class="w-fecha">26-03-02 → 26-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>4</b></td>
+                  <td>Recopilación de información (librería v1, ejemplos, metrados esperados, insumos partidas).</td>
+                  <td class="w-fecha">26-03-02 → 26-03-27</td>
+                </tr>
+                <tr>
+                  <td><b>5</b></td>
+                  <td>Ejecución contractual (producción v2 + QA + entrega + kit v2.1).</td>
+                  <td class="w-fecha">26-03-30 → 26-05-08</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:8px;">Hitos recomendados (ejecución): S1 diagnóstico+template+QA+baseline · S2–4 corrección masiva+parametrización · S5 RVT+validación Técnica/BIM · S6 empaquetizado+documentación+kit v2.1.</p>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🛒</span>Adquisiciones y presupuesto</h3>
+            <p><b>Presupuesto total:</b> <b>S/. 35,096.00</b></p>
+            <table class="tbl" style="margin-top:8px;">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th style="width:90px;">%</th>
+                  <th style="width:150px;">Monto (S/.)</th>
+                  <th>Qué cubre</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Corrección de armados (187) – geometría + metrados</td>
+                  <td><b>45%</b></td>
+                  <td><b>15,793.20</b></td>
+                  <td>Saneamiento masivo + ajustes críticos</td>
+                </tr>
+                <tr>
+                  <td>Parametrización EST-1/2/3 (aplicación + validadores)</td>
+                  <td><b>25%</b></td>
+                  <td><b>8,774.00</b></td>
+                  <td>Shared params, reglas, obligatoriedad</td>
+                </tr>
+                <tr>
+                  <td>Template Revit corporativo (entregable)</td>
+                  <td><b>10%</b></td>
+                  <td><b>3,509.60</b></td>
+                  <td>Template mínimo viable para láminas/metrados</td>
+                </tr>
+                <tr>
+                  <td>Estructura presupuestal y mapeo de “Partida”</td>
+                  <td><b>10%</b></td>
+                  <td><b>3,509.60</b></td>
+                  <td>Propuesta + mapeo + guía</td>
+                </tr>
+                <tr>
+                  <td>QA + empaquetizado + documentación (guías, checklist)</td>
+                  <td><b>5%</b></td>
+                  <td><b>1,754.80</b></td>
+                  <td>Checklist, versión, estructura, manual</td>
+                </tr>
+                <tr>
+                  <td>Contingencia</td>
+                  <td><b>5%</b></td>
+                  <td><b>1,754.80</b></td>
+                  <td>Ajustes menores</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🧑‍🤝‍🧑</span>Roles mínimos (proveedor + contrapartes)</h3>
+            <ul>
+              <li><b>Proveedor:</b> BIM Content Specialist (familias/armados/materiales), QA BIM, BIM Lead (template/parámetros/control cambios), soporte presupuesto/partidas.</li>
+              <li><b>Contrapartes:</b> BIM (QA y aceptación), Técnica (validación técnica + insumo agosto), GCPPI (gobernanza), Logística (contratación).</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ACT -->
+      <section class="col act">
+        <div class="colhead">ACT (C/A) <span class="hint">(verificar y mejorar)</span></div>
+        <div class="sections">
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚦</span>Riesgos y mitigación</h3>
+
+            <div class="riskrow">
+              <div class="badge b-red">🔴</div>
+              <div>
+                <p><b>Actualización de materiales por Técnica recién en agosto</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: entregar v2 operativa + kit/procedimiento v2.1 (mapeo, guía/checklist) para incorporar catálogo agosto sin rehacer la librería.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Dependencia de parámetros EST-1/2/3</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: congelar diccionario baseline (2026-02-23) + control de cambios formal y trazable.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Estructura presupuestal/partidas no definida</b> (Alta/Media).</p>
+                <p class="hint">Mitigación: consultor propone estructura inicial + parámetro “Partida” + guía; pendientes quedan como backlog controlado.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Volumen alto con presupuesto acotado</b> (Alta/Media).</p>
+                <p class="hint">Mitigación: industrialización (plantillas, automatización interna), QA crítico + muestreo, priorización si aparecen bloqueos.</p>
+              </div>
+            </div>
+
+            <div class="riskrow">
+              <div class="badge b-amber">🟡</div>
+              <div>
+                <p><b>Impacto en TEC-4 si cambian familias</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: pruebas de compatibilidad con TEC-4 (muestra 10–15 armados) + versionado y backward compatibility cuando sea posible.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">📈</span>Control visual (KPIs)</h3>
+            <ul>
+              <li><b>KPI1 Calidad geométrica:</b> ≥ <b>95%</b> de armados sin observaciones críticas (checklist QA).</li>
+              <li><b>KPI2 Metrados confiables:</b> reducción ≥ <b>70%</b> de discrepancias detectadas en revisión.</li>
+              <li><b>KPI3 Cobertura estándar:</b> ≥ <b>90%</b> de parámetros obligatorios completos en armados/materiales.</li>
+              <li><b>KPI4 Habilitación TEC-4:</b> inserción/uso exitoso en muestra representativa (10–15 armados).</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">✅</span>Plan de verificación (QA)</h3>
+            <ul>
+              <li><b>Baseline:</b> reporte de errores por armado/material (geométrico + metrados) antes de corrección.</li>
+              <li><b>QA por lotes:</b> checklist crítico (geometría, conectividad, parámetros, fórmulas, unidades, subcategorías).</li>
+              <li><b>Muestreo estadístico:</b> revisión ampliada si el lote supera umbral de no conformidades.</li>
+              <li><b>Validación Técnica/BIM:</b> semana 5 (RVT + metrados) con acta de conformidad.</li>
+              <li><b>Compatibilidad TEC-4:</b> prueba de muestra y registro de hallazgos con acciones.</li>
+            </ul>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🏁</span>Criterios de aceptación (Must Have)</h3>
+            <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
+              <li>187 armados v2 corregidos (geometría+metrados) con reporte de conformidad y checklist QA.</li>
+              <li>379 materiales/familias base normalizados (nombres, estructura, parámetros mínimos, rendimiento).</li>
+              <li>Parámetros EST-1/2/3 aplicados según diccionario baseline (2026-02-23), con validadores y obligatoriedad.</li>
+              <li>Template Revit corporativo entregado y operativo (láminas + metrados mínimos).</li>
+              <li>Parámetro “Partida” implementado y usable con estructura inicial + guía.</li>
+              <li>187 RVT por armado con lámina y metrado generados y validados.</li>
+              <li>Kit v2.1 (agosto) entregado: procedimiento + mapeos + checklist para incorporar el nuevo catálogo.</li>
+            </ol>
+          </div>
+
+          <div class="sec" contenteditable="true">
+            <h3><span class="ico">🚀</span>Estandarizar y desplegar</h3>
+            <ul>
+              <li>Versionado y publicación interna: <b>v2.0</b> (mayo) y preparación de <b>v2.1</b> (agosto).</li>
+              <li>Capacitación corta: cómo usar librería + template + checklist QA (BIM/Técnica/consultores clave).</li>
+              <li>Control de cambios: solicitud, evaluación impacto (TEC-4, metrados, parámetros) y release notes.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="printnote" contenteditable="true">
+      <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: Técnica + Logística · Aprobó: <b>GCPPI</b></div>
+      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-01-26 · Objetivo: 2026-05-08</div>
+    </div>
+
+  </div>
+</body>
+</html>
