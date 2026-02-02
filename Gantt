@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gantt PIB 2026</title>
+  <link rel="stylesheet" href="assets/gantt.css" />
+</head>
+
+<body>
+  <div class="gantt-app" id="app">
+    <header class="gantt-toolbar">
+      <div class="toolbar-left">
+        <div class="title">
+          <div class="h1">Gantt — PIB 2026</div>
+          <div class="sub">2 niveles (padre/hijo) • Semanal/Mensual • Línea “hoy” • Filtros • Columnas</div>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <div class="ctrl">
+          <label>Vista</label>
+          <select id="viewMode">
+            <option value="week" selected>Semanal</option>
+            <option value="month">Mensual</option>
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <label>Inicio ventana</label>
+          <input id="windowStart" type="date" />
+        </div>
+
+        <div class="ctrl">
+          <label>Rango</label>
+          <select id="windowSpan">
+            <!-- Se llena según vista -->
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <label>Filtrar Tipo</label>
+          <select id="filterTipo">
+            <option value="">(Todos)</option>
+          </select>
+        </div>
+
+        <div class="ctrl">
+          <label>Filtrar Contratación</label>
+          <select id="filterCont">
+            <option value="">(Todos)</option>
+          </select>
+        </div>
+
+        <button class="btn" id="btnToday">Ir a hoy</button>
+        <button class="btn" id="btnExpandAll">Expandir</button>
+        <button class="btn" id="btnCollapseAll">Contraer</button>
+      </div>
+    </header>
+
+    <section class="gantt-columns">
+      <div class="coltoggles">
+        <span class="toglabel">Columnas:</span>
+        <label><input type="checkbox" data-col="tipo" checked> Tipo</label>
+        <label><input type="checkbox" data-col="cont" checked> Cont.</label>
+        <label><input type="checkbox" data-col="inicio" checked> Inicio</label>
+        <label><input type="checkbox" data-col="fin" checked> Fin</label>
+        <label><input type="checkbox" data-col="dur" checked> Duración</label>
+      </div>
+      <div class="hint">
+        Tip: en vista semanal el zoom usa días; en mensual agrupa por meses. La línea roja es “hoy”.
+      </div>
+    </section>
+
+    <main class="gantt-shell">
+      <!-- Panel izquierdo: tabla tareas -->
+      <section class="pane pane-left" id="paneLeft">
+        <div class="sticky header-row" id="taskHeader"></div>
+        <div class="rows" id="taskRows"></div>
+      </section>
+
+      <!-- Panel derecho: timeline -->
+      <section class="pane pane-right" id="paneRight">
+        <div class="sticky time-header" id="timeHeader"></div>
+        <div class="time-body" id="timeBody">
+          <div class="today-line" id="todayLine" aria-hidden="true"></div>
+          <div class="time-rows" id="timeRows"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/gantt.js"></script>
+</body>
+</html>
