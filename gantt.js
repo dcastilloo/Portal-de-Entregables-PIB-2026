@@ -66,8 +66,8 @@ const TASKS = [
 
   // EST 3
   { uid:"EST-3",   group:"EST", id:"3",   parentId:"PIB-0", activity:"Actualizar formatos gestión de la información", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
-  { uid:"EST-2.1", group:"EST", id:"3.1", parentId:"EST-3, activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
-  { uid:"EST-2.2", group:"EST", id:"3.2", parentId:"EST-3", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"EST-3.1", group:"EST", id:"3.1", parentId:"EST-3, activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
+  { uid:"EST-3.2", group:"EST", id:"3.2", parentId:"EST-3", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
    
   // PER 1
   { uid:"PER-1",   group:"PER", id:"1",   parentId:"PIB-0", activity:"Plan de comunicación y sensibilización de avances BIM", tipo:"P", cont:"", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
@@ -77,9 +77,15 @@ const TASKS = [
 
   // PRO 1
   { uid:"PRO-1",   group:"PER", id:"1",   parentId:"PIB-0", activity:"Actualizar Procedimiento de Ejecución", tipo:"P", cont:"", inicio:"09/02/2026", fin:"30/03/2026", dur:39 },
-  { uid:"PER-1.1", group:"PER", id:"1.1", parentId:"PER-1", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
-  { uid:"PER-1.2", group:"PER", id:"1.2", parentId:"PER-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
-  { uid:"PER-1.3", group:"PER", id:"1.3", parentId:"PER-1", activity:"Difusión", tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
+  { uid:"PRO-1.1", group:"PER", id:"1.1", parentId:"PRO-1", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
+  { uid:"PRO-1.2", group:"PER", id:"1.2", parentId:"PRO-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
+  { uid:"PRO-1.3", group:"PER", id:"1.3", parentId:"PRO-1", activity:"Difusión", tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
+
+  // PRO 2
+  { uid:"PRO-2",   group:"PER", id:"1",   parentId:"PIB-0", activity:"Actualizar Procedimiento de Ejecución", tipo:"P", cont:"", inicio:"09/02/2026", fin:"30/03/2026", dur:39 },
+  { uid:"PRO-2.1", group:"PER", id:"1.1", parentId:"PRO-2", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
+  { uid:"PRO-2.2", group:"PER", id:"1.2", parentId:"PRO-2", activity:"Desarrollo", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
+  { uid:"PRO-2.3", group:"PER", id:"1.3", parentId:"PRO-2", activity:"Difusión", tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
 
   // TEC 4 (ejemplo “Mayor”)
   { uid:"TEC-4",   group:"TEC", id:"4",   parentId:"PIB-0", activity:"Automatizar el modelado 3D de redes", tipo:"P", cont:"Mayor", inicio:"16/02/2026", fin:"27/11/2026", dur:284 },
