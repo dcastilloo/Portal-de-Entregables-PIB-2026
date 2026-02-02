@@ -73,8 +73,16 @@ const TASKS = [
   { uid:"EST-4",   group:"EST", id:"4",   parentId:"PIB-0", activity:"Actualizar formato de acta de reunión virtual", tipo:"P", cont:"", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
   { uid:"EST-4.1", group:"EST", id:"4.1", parentId:"EST-4, activity:"Desarrollo", tipo:"H", cont:"", inicio:"02/03/2026", fin:"13/03/2026", dur:11 },
   { uid:"EST-4.2", group:"EST", id:"4.2", parentId:"EST-4", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
-   
-  // PER 1
+
+  // EST 5
+  { uid:"EST-5",   group:"EST", id:"5",   parentId:"PIB-0", activity:"Campaña de difusión de metas y resultados BIM", tipo:"P", cont:"Mayor", inicio:"26/01/2026", fin:"24/04/2026", dur:88 },
+  { uid:"EST-5.1", group:"EST", id:"5.1", parentId:"EST-5", activity:"Definición de alcance", tipo:"H", cont:"Mayor", inicio:"26/01/2026", fin:"13/02/2026", dur:18 },
+  { uid:"EST-5.2", group:"EST", id:"5.2", parentId:"EST-5", activity:"Elaboración TDR", tipo:"H", cont:"Mayor", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"EST-5.3", group:"EST", id:"5.3", parentId:"EST-5", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-5.4", group:"EST", id:"5.4", parentId:"EST-5", activity:"Proceso de contratación", tipo:"H", cont:"Mayor", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-5.5", group:"EST", id:"5.5", parentId:"EST-5", activity:"Ejecución contractual", tipo:"H", cont:"Mayor", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
+  
+   // PER 1
   { uid:"PER-1",   group:"PER", id:"1",   parentId:"PIB-0", activity:"Plan de comunicación y sensibilización de avances BIM", tipo:"P", cont:"", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
   { uid:"PER-1.1", group:"PER", id:"1.1", parentId:"PER-1", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"09/02/2026", fin:"13/02/2026", dur:4 },
   { uid:"PER-1.2", group:"PER", id:"1.2", parentId:"PER-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
