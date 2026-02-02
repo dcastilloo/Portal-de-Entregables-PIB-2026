@@ -68,6 +68,11 @@ const TASKS = [
   { uid:"EST-3",   group:"EST", id:"3",   parentId:"PIB-0", activity:"Actualizar formatos gestión de la información", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
   { uid:"EST-3.1", group:"EST", id:"3.1", parentId:"EST-3, activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
   { uid:"EST-3.2", group:"EST", id:"3.2", parentId:"EST-3", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+
+  // EST 4
+  { uid:"EST-4",   group:"EST", id:"4",   parentId:"PIB-0", activity:"Actualizar formato de acta de reunión virtual", tipo:"P", cont:"", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-4.1", group:"EST", id:"4.1", parentId:"EST-4, activity:"Desarrollo", tipo:"H", cont:"", inicio:"02/03/2026", fin:"13/03/2026", dur:11 },
+  { uid:"EST-4.2", group:"EST", id:"4.2", parentId:"EST-4", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
    
   // PER 1
   { uid:"PER-1",   group:"PER", id:"1",   parentId:"PIB-0", activity:"Plan de comunicación y sensibilización de avances BIM", tipo:"P", cont:"", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
