@@ -52,11 +52,6 @@ function monthNameEs(m){ // 0-11
 ========= */
 const TASKS = [
   // =========================
-  // PIB
-  // =========================
-  { uid:"PIB-0", group:"PIB", id:"0",   parentId:null, activity:"PLAN DE IMPLEMENTACIÓN BIM 2026", tipo:"P", cont:"",       inicio:"12/01/2026", fin:"18/12/2026", dur:340 },
-
-  // =========================
   // EST
   // =========================
   { uid:"EST-1",   group:"EST", id:"1",   parentId:null,    activity:"Actualizar estándar CDE", tipo:"P", cont:"",       inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
