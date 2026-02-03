@@ -51,64 +51,158 @@ function monthNameEs(m){ // 0-11
    - parentId vincula hijo con padre
 ========= */
 const TASKS = [
+  // =========================
   // PIB
-  { uid:"PIB-0", group:"PIB", id:"0",   parentId:null, activity:"PLAN DE IMPLEMENTACIÓN BIM 2026", tipo:"P", cont:"", inicio:"12/01/2026", fin:"18/12/2026", dur:340 },
+  // =========================
+  { uid:"PIB-0", group:"PIB", id:"0",   parentId:null, activity:"PLAN DE IMPLEMENTACIÓN BIM 2026", tipo:"P", cont:"",       inicio:"12/01/2026", fin:"18/12/2026", dur:340 },
 
-  // EST 1
-  { uid:"EST-1",   group:"EST", id:"1",   parentId:null, activity:"Actualizar estándar CDE", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
-  { uid:"EST-1.1", group:"EST", id:"1.1", parentId:"EST-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
-  { uid:"EST-1.2", group:"EST", id:"1.2", parentId:"EST-1", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  // =========================
+  // EST
+  // =========================
+  { uid:"EST-1",   group:"EST", id:"1",   parentId:null,    activity:"Actualizar estándar CDE", tipo:"P", cont:"",       inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
+  { uid:"EST-1.1", group:"EST", id:"1.1", parentId:"EST-1", activity:"Desarrollo",             tipo:"H", cont:"",       inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
+  { uid:"EST-1.2", group:"EST", id:"1.2", parentId:"EST-1", activity:"Publicación SIG",        tipo:"H", cont:"",       inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
 
-  // EST 2
-  { uid:"EST-2",   group:"EST", id:"2",   parentId:null, activity:"Actualizar estándar modelado", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
-  { uid:"EST-2.1", group:"EST", id:"2.1", parentId:"EST-2", activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
-  { uid:"EST-2.2", group:"EST", id:"2.2", parentId:"EST-2", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"EST-2",   group:"EST", id:"2",   parentId:null,    activity:"Actualizar estándar modelado", tipo:"P", cont:"",  inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
+  { uid:"EST-2.1", group:"EST", id:"2.1", parentId:"EST-2", activity:"Desarrollo",                 tipo:"H", cont:"",  inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
+  { uid:"EST-2.2", group:"EST", id:"2.2", parentId:"EST-2", activity:"Publicación SIG",            tipo:"H", cont:"",  inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
 
-  // EST 3
-  { uid:"EST-3",   group:"EST", id:"3",   parentId:null, activity:"Actualizar formatos gestión de la información", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
-  { uid:"EST-3.1", group:"EST", id:"3.1", parentId:"EST-3", activity:"Desarrollo", tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
-  { uid:"EST-3.2", group:"EST", id:"3.2", parentId:"EST-3", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"EST-3",   group:"EST", id:"3",   parentId:null,    activity:"Actualizar formatos gestión de la información", tipo:"P", cont:"", inicio:"12/01/2026", fin:"27/02/2026", dur:46 },
+  { uid:"EST-3.1", group:"EST", id:"3.1", parentId:"EST-3", activity:"Desarrollo",                                   tipo:"H", cont:"", inicio:"12/01/2026", fin:"13/02/2026", dur:32 },
+  { uid:"EST-3.2", group:"EST", id:"3.2", parentId:"EST-3", activity:"Publicación SIG",                              tipo:"H", cont:"", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
 
-  // EST 4
-  { uid:"EST-4",   group:"EST", id:"4",   parentId:null, activity:"Actualizar formato de acta de reunión virtual", tipo:"P", cont:"", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
-  { uid:"EST-4.1", group:"EST", id:"4.1", parentId:"EST-4", activity:"Desarrollo", tipo:"H", cont:"", inicio:"02/03/2026", fin:"13/03/2026", dur:11 },
-  { uid:"EST-4.2", group:"EST", id:"4.2", parentId:"EST-4", activity:"Publicación SIG", tipo:"H", cont:"", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
+  { uid:"EST-4",   group:"EST", id:"4",   parentId:null,    activity:"Actualizar formato de acta de reunión virtual", tipo:"P", cont:"", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-4.1", group:"EST", id:"4.1", parentId:"EST-4", activity:"Desarrollo",                                     tipo:"H", cont:"", inicio:"02/03/2026", fin:"13/03/2026", dur:11 },
+  { uid:"EST-4.2", group:"EST", id:"4.2", parentId:"EST-4", activity:"Publicación SIG",                                tipo:"H", cont:"", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
 
-  // EST 5
-  { uid:"EST-5",   group:"EST", id:"5",   parentId:null, activity:"Campaña de difusión de metas y resultados BIM", tipo:"P", cont:"Mayor", inicio:"26/01/2026", fin:"24/04/2026", dur:88 },
-  { uid:"EST-5.1", group:"EST", id:"5.1", parentId:"EST-5", activity:"Definición de alcance", tipo:"H", cont:"Mayor", inicio:"26/01/2026", fin:"13/02/2026", dur:18 },
-  { uid:"EST-5.2", group:"EST", id:"5.2", parentId:"EST-5", activity:"Elaboración TDR", tipo:"H", cont:"Mayor", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
-  { uid:"EST-5.3", group:"EST", id:"5.3", parentId:"EST-5", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
-  { uid:"EST-5.4", group:"EST", id:"5.4", parentId:"EST-5", activity:"Proceso de contratación", tipo:"H", cont:"Mayor", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
-  { uid:"EST-5.5", group:"EST", id:"5.5", parentId:"EST-5", activity:"Ejecución contractual", tipo:"H", cont:"Mayor", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
+  { uid:"EST-5",   group:"EST", id:"5",   parentId:null,    activity:"Campaña de difusión de metas y resultados BIM", tipo:"P", cont:"8 UIT", inicio:"26/01/2026", fin:"24/04/2026", dur:88 },
+  { uid:"EST-5.1", group:"EST", id:"5.1", parentId:"EST-5", activity:"Definición de alcance",                         tipo:"H", cont:"8 UIT", inicio:"26/01/2026", fin:"13/02/2026", dur:18 },
+  { uid:"EST-5.2", group:"EST", id:"5.2", parentId:"EST-5", activity:"Elaboración TDR",                               tipo:"H", cont:"8 UIT", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"EST-5.3", group:"EST", id:"5.3", parentId:"EST-5", activity:"Proceso de contratación",                       tipo:"H", cont:"8 UIT", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-5.4", group:"EST", id:"5.4", parentId:"EST-5", activity:"Recopilación de información",                   tipo:"H", cont:"8 UIT", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"EST-5.5", group:"EST", id:"5.5", parentId:"EST-5", activity:"Ejecución contractual",                         tipo:"H", cont:"8 UIT", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
 
-  // PER 1
-  { uid:"PER-1",   group:"PER", id:"1",   parentId:null, activity:"Plan de comunicación y sensibilización de avances BIM", tipo:"P", cont:"", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
-  { uid:"PER-1.1", group:"PER", id:"1.1", parentId:"PER-1", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"09/02/2026", fin:"13/02/2026", dur:4 },
-  { uid:"PER-1.2", group:"PER", id:"1.2", parentId:"PER-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
-  { uid:"PER-1.3", group:"PER", id:"1.3", parentId:"PER-1", activity:"Difusión", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/03/2026", dur:11 },
+  { uid:"EST-6",   group:"EST", id:"6",   parentId:null,    activity:"Actualizar TDR de contratación de estudios", tipo:"P", cont:"", inicio:"16/03/2026", fin:"22/05/2026", dur:67 },
+  { uid:"EST-6.1", group:"EST", id:"6.1", parentId:"EST-6", activity:"Definición de alcance",                        tipo:"H", cont:"", inicio:"16/03/2026", fin:"20/03/2026", dur:4 },
+  { uid:"EST-6.2", group:"EST", id:"6.2", parentId:"EST-6", activity:"Desarrollo",                                   tipo:"H", cont:"", inicio:"23/03/2026", fin:"07/05/2026", dur:45 },
+  { uid:"EST-6.3", group:"EST", id:"6.3", parentId:"EST-6", activity:"Publicación SIG",                              tipo:"H", cont:"", inicio:"11/05/2026", fin:"22/05/2026", dur:11 },
 
-  // PRO 1
-  { uid:"PRO-1",   group:"PRO", id:"1",   parentId:null, activity:"Actualizar Procedimiento de Ejecución", tipo:"P", cont:"", inicio:"09/02/2026", fin:"30/03/2026", dur:39 },
-  { uid:"PRO-1.1", group:"PRO", id:"1.1", parentId:"PRO-1", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
-  { uid:"PRO-1.2", group:"PRO", id:"1.2", parentId:"PRO-1", activity:"Desarrollo", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
-  { uid:"PRO-1.3", group:"PRO", id:"1.3", parentId:"PRO-1", activity:"Difusión", tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
+  { uid:"EST-7",   group:"EST", id:"7",   parentId:null,    activity:"Actualizar TDR de contratación de obras", tipo:"P", cont:"", inicio:"16/03/2026", fin:"22/05/2026", dur:67 },
+  { uid:"EST-7.1", group:"EST", id:"7.1", parentId:"EST-7", activity:"Definición de alcance",                      tipo:"H", cont:"", inicio:"16/03/2026", fin:"20/03/2026", dur:4 },
+  { uid:"EST-7.2", group:"EST", id:"7.2", parentId:"EST-7", activity:"Desarrollo",                                 tipo:"H", cont:"", inicio:"23/03/2026", fin:"07/05/2026", dur:45 },
+  { uid:"EST-7.3", group:"EST", id:"7.3", parentId:"EST-7", activity:"Publicación SIG",                            tipo:"H", cont:"", inicio:"11/05/2026", fin:"22/05/2026", dur:11 },
 
-  // PRO 2
-  { uid:"PRO-2",   group:"PRO", id:"2",   parentId:null, activity:"Actualizar Procedimiento de Ejecución", tipo:"P", cont:"", inicio:"09/02/2026", fin:"30/03/2026", dur:39 },
-  { uid:"PRO-2.1", group:"PRO", id:"2.1", parentId:"PRO-2", activity:"Definición de alcance", tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
-  { uid:"PRO-2.2", group:"PRO", id:"2.2", parentId:"PRO-2", activity:"Desarrollo", tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
-  { uid:"PRO-2.3", group:"PRO", id:"2.3", parentId:"PRO-2", activity:"Difusión", tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
+  { uid:"EST-8",   group:"EST", id:"8",   parentId:null,    activity:"CONEBIM", tipo:"P", cont:"Mayor", inicio:"02/02/2026", fin:"27/11/2026", dur:298 },
+  { uid:"EST-8.1", group:"EST", id:"8.1", parentId:"EST-8", activity:"Definición de alcance",       tipo:"H", cont:"Mayor", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
+  { uid:"EST-8.2", group:"EST", id:"8.2", parentId:"EST-8", activity:"Elaboración TDR",             tipo:"H", cont:"Mayor", inicio:"09/03/2026", fin:"31/03/2026", dur:22 },
+  { uid:"EST-8.3", group:"EST", id:"8.3", parentId:"EST-8", activity:"Proceso de contratación",     tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"EST-8.4", group:"EST", id:"8.4", parentId:"EST-8", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"EST-8.5", group:"EST", id:"8.5", parentId:"EST-8", activity:"Ejecución contractual",       tipo:"H", cont:"Mayor", inicio:"07/09/2026", fin:"27/11/2026", dur:81 },
 
-  // TEC 4 (ejemplo “Mayor”)
-  { uid:"TEC-4",   group:"TEC", id:"4",   parentId:null, activity:"Automatizar el modelado 3D de redes", tipo:"P", cont:"Mayor", inicio:"16/02/2026", fin:"27/11/2026", dur:284 },
-  { uid:"TEC-4.1", group:"TEC", id:"4.1", parentId:"TEC-4", activity:"Definición de alcance", tipo:"H", cont:"Mayor", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
-  { uid:"TEC-4.2", group:"TEC", id:"4.2", parentId:"TEC-4", activity:"Elaboración TDR", tipo:"H", cont:"Mayor", inicio:"09/03/2026", fin:"31/03/2026", dur:22 },
-  { uid:"TEC-4.3", group:"TEC", id:"4.3", parentId:"TEC-4", activity:"Proceso de contratación", tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
-  { uid:"TEC-4.4", group:"TEC", id:"4.4", parentId:"TEC-4", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
-  { uid:"TEC-4.5", group:"TEC", id:"4.5", parentId:"TEC-4", activity:"Ejecución contractual", tipo:"H", cont:"Mayor", inicio:"07/09/2026", fin:"27/11/2026", dur:81 },
+  // =========================
+  // PER
+  // =========================
+  { uid:"PER-1",   group:"PER", id:"1",   parentId:null,    activity:"Plan de comunicación y sensibilización de avances BIM", tipo:"P", cont:"", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
+  { uid:"PER-1.1", group:"PER", id:"1.1", parentId:"PER-1", activity:"Definición de alcance",                               tipo:"H", cont:"", inicio:"02/02/2026", fin:"06/02/2026", dur:4 },
+  { uid:"PER-1.2", group:"PER", id:"1.2", parentId:"PER-1", activity:"Desarrollo",                                          tipo:"H", cont:"", inicio:"09/02/2026", fin:"20/02/2026", dur:11 },
+  { uid:"PER-1.3", group:"PER", id:"1.3", parentId:"PER-1", activity:"Difusión",                                            tipo:"H", cont:"", inicio:"23/02/2026", fin:"06/03/2026", dur:11 },
+
+  { uid:"PER-2",   group:"PER", id:"2",   parentId:null,    activity:"Capacitación en Gestión de Proyectos (PMI+BIM)", tipo:"P", cont:"8 UIT", inicio:"19/01/2026", fin:"27/03/2026", dur:67 },
+  { uid:"PER-2.1", group:"PER", id:"2.1", parentId:"PER-2", activity:"Elaboración TDR",                                  tipo:"H", cont:"8 UIT", inicio:"19/01/2026", fin:"30/01/2026", dur:11 },
+  { uid:"PER-2.2", group:"PER", id:"2.2", parentId:"PER-2", activity:"Proceso de contratación",                          tipo:"H", cont:"8 UIT", inicio:"02/02/2026", fin:"27/02/2026", dur:25 },
+  { uid:"PER-2.3", group:"PER", id:"2.3", parentId:"PER-2", activity:"Recopilación de información",                      tipo:"H", cont:"8 UIT", inicio:"02/02/2026", fin:"27/02/2026", dur:25 },
+  { uid:"PER-2.4", group:"PER", id:"2.4", parentId:"PER-2", activity:"Ejecución contractual",                            tipo:"H", cont:"8 UIT", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+
+  { uid:"PER-3",   group:"PER", id:"3",   parentId:null,    activity:"Solicitud de plazos fijos (2027 - 2029)", tipo:"P", cont:"", inicio:"19/01/2026", fin:"10/04/2026", dur:81 },
+  { uid:"PER-3.1", group:"PER", id:"3.1", parentId:"PER-3", activity:"Informe de sustento",                         tipo:"H", cont:"", inicio:"19/01/2026", fin:"13/02/2026", dur:25 },
+  { uid:"PER-3.2", group:"PER", id:"3.2", parentId:"PER-3", activity:"Autorización Directorio",                     tipo:"H", cont:"", inicio:"16/02/2026", fin:"13/03/2026", dur:25 },
+  { uid:"PER-3.3", group:"PER", id:"3.3", parentId:"PER-3", activity:"Autorización Fonafe",                         tipo:"H", cont:"", inicio:"16/03/2026", fin:"10/04/2026", dur:25 },
+
+  { uid:"PER-4",   group:"PER", id:"4",   parentId:null,    activity:"Aula virtual para formación BIM", tipo:"P", cont:"8 UIT", inicio:"06/07/2026", fin:"23/10/2026", dur:109 },
+  { uid:"PER-4.1", group:"PER", id:"4.1", parentId:"PER-4", activity:"Elaboración TDR",            tipo:"H", cont:"8 UIT", inicio:"06/07/2026", fin:"17/07/2026", dur:11 },
+  { uid:"PER-4.2", group:"PER", id:"4.2", parentId:"PER-4", activity:"Proceso de contratación",    tipo:"H", cont:"8 UIT", inicio:"20/07/2026", fin:"14/08/2026", dur:25 },
+  { uid:"PER-4.3", group:"PER", id:"4.3", parentId:"PER-4", activity:"Ejecución contractual",      tipo:"H", cont:"8 UIT", inicio:"17/08/2026", fin:"23/10/2026", dur:67 },
+
+  { uid:"PER-5",   group:"PER", id:"5",   parentId:null, activity:"Capacitación en revisión de entregables BIM de estudios", tipo:"P", cont:"", inicio:"19/01/2026", fin:"18/12/2026", dur:333 },
+  { uid:"PER-6",   group:"PER", id:"6",   parentId:null, activity:"Evaluar nivel de madurez BIM",                           tipo:"P", cont:"", inicio:"05/10/2026", fin:"18/12/2026", dur:74 },
+
+  // =========================
+  // PRO
+  // =========================
+  { uid:"PRO-1",   group:"PRO", id:"1",   parentId:null,    activity:"Actualizar Procedimiento de Ejecución", tipo:"P", cont:"", inicio:"09/02/2026", fin:"20/03/2026", dur:39 },
+  { uid:"PRO-1.1", group:"PRO", id:"1.1", parentId:"PRO-1", activity:"Definición de alcance",                tipo:"H", cont:"", inicio:"09/02/2026", fin:"13/02/2026", dur:4 },
+  { uid:"PRO-1.2", group:"PRO", id:"1.2", parentId:"PRO-1", activity:"Desarrollo",                           tipo:"H", cont:"", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
+  { uid:"PRO-1.3", group:"PRO", id:"1.3", parentId:"PRO-1", activity:"Publicación SIG",                      tipo:"H", cont:"", inicio:"09/03/2026", fin:"20/03/2026", dur:11 },
+
+  { uid:"PRO-2",   group:"PRO", id:"2",   parentId:null,    activity:"Actualizar Procedimiento de Formulación y Evaluación", tipo:"P", cont:"", inicio:"09/02/2026", fin:"20/03/2026", dur:39 },
+  { uid:"PRO-2.1", group:"PRO", id:"2.1", parentId:"PRO-2", activity:"Definición de alcance",                              tipo:"H", cont:"", inicio:"09/02/2026", fin:"13/02/2026", dur:4 },
+  { uid:"PRO-2.2", group:"PRO", id:"2.2", parentId:"PRO-2", activity:"Desarrollo",                                         tipo:"H", cont:"", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
+  { uid:"PRO-2.3", group:"PRO", id:"2.3", parentId:"PRO-2", activity:"Publicación SIG",                                    tipo:"H", cont:"", inicio:"09/03/2026", fin:"20/03/2026", dur:11 },
+
+  { uid:"PRO-3",   group:"PRO", id:"3",   parentId:null,    activity:"Procedimiento para administración de licencias CDE", tipo:"P", cont:"", inicio:"02/03/2026", fin:"10/04/2026", dur:39 },
+  { uid:"PRO-3.1", group:"PRO", id:"3.1", parentId:"PRO-3", activity:"Elaboración",                                       tipo:"H", cont:"", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"PRO-3.2", group:"PRO", id:"3.2", parentId:"PRO-3", activity:"Publicación SIG",                                   tipo:"H", cont:"", inicio:"30/03/2026", fin:"10/04/2026", dur:11 },
+
+  { uid:"PRO-4",   group:"PRO", id:"4",   parentId:null,    activity:"Actualizar librería de armados", tipo:"P", cont:"8 UIT", inicio:"26/01/2026", fin:"08/05/2026", dur:102 },
+  { uid:"PRO-4.1", group:"PRO", id:"4.1", parentId:"PRO-4", activity:"Definición de alcance",           tipo:"H", cont:"8 UIT", inicio:"26/01/2026", fin:"13/02/2026", dur:18 },
+  { uid:"PRO-4.2", group:"PRO", id:"4.2", parentId:"PRO-4", activity:"Elaboración TDR",                 tipo:"H", cont:"8 UIT", inicio:"16/02/2026", fin:"27/02/2026", dur:11 },
+  { uid:"PRO-4.3", group:"PRO", id:"4.3", parentId:"PRO-4", activity:"Proceso de contratación",         tipo:"H", cont:"8 UIT", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"PRO-4.4", group:"PRO", id:"4.4", parentId:"PRO-4", activity:"Recopilación de información",     tipo:"H", cont:"8 UIT", inicio:"02/03/2026", fin:"27/03/2026", dur:25 },
+  { uid:"PRO-4.5", group:"PRO", id:"4.5", parentId:"PRO-4", activity:"Ejecución contractual",           tipo:"H", cont:"8 UIT", inicio:"30/03/2026", fin:"08/05/2026", dur:39 },
+
+  // =========================
+  // TEC
+  // =========================
+  { uid:"TEC-1",   group:"TEC", id:"1",   parentId:null,    activity:"Arrendamiento de hardware (2027 - 2029)", tipo:"P", cont:"Fonafe", inicio:"02/02/2026", fin:"28/08/2026", dur:207 },
+  { uid:"TEC-1.1", group:"TEC", id:"1.1", parentId:"TEC-1", activity:"Firma de convenios",                      tipo:"H", cont:"Fonafe", inicio:"02/02/2026", fin:"29/05/2026", dur:116 },
+  { uid:"TEC-1.2", group:"TEC", id:"1.2", parentId:"TEC-1", activity:"Convocatoria del servicio",               tipo:"H", cont:"Fonafe", inicio:"01/06/2026", fin:"28/08/2026", dur:88 },
+
+  { uid:"TEC-2",   group:"TEC", id:"2",   parentId:null,    activity:"Arrendamiento de software (2027 - 2029)", tipo:"P", cont:"Fonafe", inicio:"02/02/2026", fin:"28/08/2026", dur:207 },
+  { uid:"TEC-2.1", group:"TEC", id:"2.1", parentId:"TEC-2", activity:"Firma de convenios",                      tipo:"H", cont:"Fonafe", inicio:"02/02/2026", fin:"29/05/2026", dur:116 },
+  { uid:"TEC-2.2", group:"TEC", id:"2.2", parentId:"TEC-2", activity:"Convocatoria del servicio",               tipo:"H", cont:"Fonafe", inicio:"01/06/2026", fin:"28/08/2026", dur:88 },
+
+  { uid:"TEC-3",   group:"TEC", id:"3",   parentId:null,    activity:"Aplicativo para administración de licencias", tipo:"P", cont:"Mayor", inicio:"02/02/2026", fin:"27/11/2026", dur:298 },
+  { uid:"TEC-3.1", group:"TEC", id:"3.1", parentId:"TEC-3", activity:"Definición de alcance",                      tipo:"H", cont:"Mayor", inicio:"02/02/2026", fin:"06/03/2026", dur:32 },
+  { uid:"TEC-3.2", group:"TEC", id:"3.2", parentId:"TEC-3", activity:"Elaboración TDR",                            tipo:"H", cont:"Mayor", inicio:"09/03/2026", fin:"31/03/2026", dur:22 },
+  { uid:"TEC-3.3", group:"TEC", id:"3.3", parentId:"TEC-3", activity:"Proceso de contratación",                    tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-3.4", group:"TEC", id:"3.4", parentId:"TEC-3", activity:"Recopilación de información",                tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-3.5", group:"TEC", id:"3.5", parentId:"TEC-3", activity:"Ejecución contractual",                      tipo:"H", cont:"Mayor", inicio:"07/09/2026", fin:"27/11/2026", dur:81 },
+
+  { uid:"TEC-4",   group:"TEC", id:"4",   parentId:null,    activity:"Automatizar el modelado 3D de redes", tipo:"P", cont:"Mayor", inicio:"16/02/2026", fin:"27/11/2026", dur:284 },
+  { uid:"TEC-4.1", group:"TEC", id:"4.1", parentId:"TEC-4", activity:"Definición de alcance",                tipo:"H", cont:"Mayor", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
+  { uid:"TEC-4.2", group:"TEC", id:"4.2", parentId:"TEC-4", activity:"Elaboración TDR",                      tipo:"H", cont:"Mayor", inicio:"09/03/2026", fin:"31/03/2026", dur:22 },
+  { uid:"TEC-4.3", group:"TEC", id:"4.3", parentId:"TEC-4", activity:"Proceso de contratación",              tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-4.4", group:"TEC", id:"4.4", parentId:"TEC-4", activity:"Recopilación de información",          tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-4.5", group:"TEC", id:"4.5", parentId:"TEC-4", activity:"Ejecución contractual",                tipo:"H", cont:"Mayor", inicio:"07/09/2026", fin:"27/11/2026", dur:81 },
+
+  { uid:"TEC-5",   group:"TEC", id:"5",   parentId:null,    activity:"Dashboard de seguimiento de proyectos", tipo:"P", cont:"Mayor", inicio:"16/02/2026", fin:"27/11/2026", dur:284 },
+  { uid:"TEC-5.1", group:"TEC", id:"5.1", parentId:"TEC-5", activity:"Definición de alcance",                 tipo:"H", cont:"Mayor", inicio:"16/02/2026", fin:"06/03/2026", dur:18 },
+  { uid:"TEC-5.2", group:"TEC", id:"5.2", parentId:"TEC-5", activity:"Elaboración TDR",                       tipo:"H", cont:"Mayor", inicio:"09/03/2026", fin:"31/03/2026", dur:22 },
+  { uid:"TEC-5.3", group:"TEC", id:"5.3", parentId:"TEC-5", activity:"Proceso de contratación",               tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-5.4", group:"TEC", id:"5.4", parentId:"TEC-5", activity:"Recopilación de información",           tipo:"H", cont:"Mayor", inicio:"06/04/2026", fin:"04/09/2026", dur:151 },
+  { uid:"TEC-5.5", group:"TEC", id:"5.5", parentId:"TEC-5", activity:"Ejecución contractual",                 tipo:"H", cont:"Mayor", inicio:"07/09/2026", fin:"27/11/2026", dur:81 },
+
+  { uid:"TEC-6",   group:"TEC", id:"6",   parentId:null,    activity:"Gemelos digitales en SET", tipo:"P", cont:"Mayor", inicio:"16/03/2026", fin:"11/12/2026", dur:270 },
+  { uid:"TEC-6.1", group:"TEC", id:"6.1", parentId:"TEC-6", activity:"Definición de alcance",    tipo:"H", cont:"Mayor", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
+  { uid:"TEC-6.2", group:"TEC", id:"6.2", parentId:"TEC-6", activity:"Elaboración TDR",          tipo:"H", cont:"Mayor", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
+  { uid:"TEC-6.3", group:"TEC", id:"6.3", parentId:"TEC-6", activity:"Proceso de contratación",  tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-6.4", group:"TEC", id:"6.4", parentId:"TEC-6", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-6.5", group:"TEC", id:"6.5", parentId:"TEC-6", activity:"Ejecución contractual",    tipo:"H", cont:"Mayor", inicio:"28/09/2026", fin:"11/12/2026", dur:74 },
+
+  { uid:"TEC-7",   group:"TEC", id:"7",   parentId:null,    activity:"Integración CDE y GIS", tipo:"P", cont:"Mayor", inicio:"16/03/2026", fin:"11/12/2026", dur:270 },
+  { uid:"TEC-7.1", group:"TEC", id:"7.1", parentId:"TEC-7", activity:"Definición de alcance",    tipo:"H", cont:"Mayor", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
+  { uid:"TEC-7.2", group:"TEC", id:"7.2", parentId:"TEC-7", activity:"Elaboración TDR",          tipo:"H", cont:"Mayor", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
+  { uid:"TEC-7.3", group:"TEC", id:"7.3", parentId:"TEC-7", activity:"Proceso de contratación",  tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-7.4", group:"TEC", id:"7.4", parentId:"TEC-7", activity:"Recopilación de información", tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-7.5", group:"TEC", id:"7.5", parentId:"TEC-7", activity:"Ejecución contractual",    tipo:"H", cont:"Mayor", inicio:"28/09/2026", fin:"11/12/2026", dur:74 },
+
+  { uid:"TEC-8",   group:"TEC", id:"8",   parentId:null,    activity:"Gestión inteligente de proyectos", tipo:"P", cont:"Mayor", inicio:"16/03/2026", fin:"11/12/2026", dur:270 },
+  { uid:"TEC-8.1", group:"TEC", id:"8.1", parentId:"TEC-8", activity:"Definición de alcance",             tipo:"H", cont:"Mayor", inicio:"16/03/2026", fin:"27/03/2026", dur:11 },
+  { uid:"TEC-8.2", group:"TEC", id:"8.2", parentId:"TEC-8", activity:"Elaboración TDR",                   tipo:"H", cont:"Mayor", inicio:"30/03/2026", fin:"24/04/2026", dur:25 },
+  { uid:"TEC-8.3", group:"TEC", id:"8.3", parentId:"TEC-8", activity:"Proceso de contratación",           tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-8.4", group:"TEC", id:"8.4", parentId:"TEC-8", activity:"Recopilación de información",       tipo:"H", cont:"Mayor", inicio:"27/04/2026", fin:"25/09/2026", dur:151 },
+  { uid:"TEC-8.5", group:"TEC", id:"8.5", parentId:"TEC-8", activity:"Ejecución contractual",             tipo:"H", cont:"Mayor", inicio:"28/09/2026", fin:"11/12/2026", dur:74 },
 ];
-
 /* =========
    Estado + DOM
 ========= */
