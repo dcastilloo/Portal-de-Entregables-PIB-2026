@@ -333,7 +333,7 @@ function renderRows(){
 
     const badge = document.createElement('span');
     badge.className = 'badge ' + (t.tipo === 'P' ? 'p' : 'h');
-    
+    badge.textContent = t.group;
 
     const actWrap = document.createElement('div');
     actWrap.className = 'act-wrap';
