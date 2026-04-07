@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>A3 Lean BIM — TEC-6</title>
+  <title>A3 Lean BIM — TEC-8</title>
   <link rel="stylesheet" href="a3-bim-lean.css" />
 </head>
 
@@ -15,13 +15,13 @@
       <div class="brand">
         <div class="title">TEC-8</div>
         <div class="subtitle">
-          Gestión inteligente de proyectos — Asistente IA (Agente) + Data Fabric mínimo sobre CDE Distriluz para seguimiento semanal e informes con citas/anexos.
+          Gestión inteligente de proyectos — Automatización del planeamiento y preinversión para nuevas SET y rutas de Media Tensión (MT) mediante interoperabilidad GIS + BIM + validación eléctrica.
         </div>
         <div class="chips">
           <span class="chip">Proyecto: PIB 2026 / Distriluz</span>
           <span class="chip">Área: BIM</span>
-          <span class="chip">CDE: Distriluz (lectura)</span>
-          <span class="chip">MVP: RAG + plantillas</span>
+          <span class="chip">CDE: ACC / Distriluz</span>
+          <span class="chip">MVP: Web service + GIS + BIM ligero</span>
           <span class="chip">Presupuesto: S/. 600,000.00</span>
         </div>
       </div>
@@ -31,8 +31,8 @@
         <div class="kv"><span class="k">Equipo:</span><span class="v">BIM · JAP · TIC · GCPPI · Logística · Proveedor</span></div>
         <div class="kv"><span class="k">Inicio:</span><span class="v">2026-03-16</span></div>
         <div class="kv"><span class="k">Objetivo:</span><span class="v">2026-12-11</span></div>
-        <div class="kv"><span class="k">Versión:</span><span class="v">v0.1</span></div>
-        <div class="kv"><span class="k">Estado:</span><span class="v">En revisión</span></div>
+        <div class="kv"><span class="k">Versión:</span><span class="v">v0.2</span></div>
+        <div class="kv"><span class="k">Estado:</span><span class="v">Actualizado por variación de alcance</span></div>
       </div>
     </div>
 
@@ -47,57 +47,58 @@
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🎯</span>Objetivo</h3>
             <p>
-              Implementar un <b>Agente IA</b> (MVP) que opere como <b>data fabric</b> mínimo sobre el CDE Distriluz para apoyar a gestores de proyectos en:
-              (1) <b>pendientes semanales</b> por proyecto/contrato/gestor exportables a Excel, y (2) <b>borradores</b> de informes contractuales con
-              <b>citas obligatorias</b> a evidencia del CDE (ID/ruta/versión) y anexos.
+              Implementar un <b>Producto Digital</b> que acelere y estandarice la etapa de <b>planeamiento/preinversión</b> para proyectos de nuevas
+              <b>Subestaciones (SET)</b> y <b>trazados de Media Tensión (MT)</b>, generando alternativas comparables y un paquete base de salida:
+              <b>mapa GIS</b>, <b>dataset/modelo BIM ligero LOD2/LOI2</b>, <b>lámina esquemática</b> y <b>metrados</b>.
             </p>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">⚠️</span>Problema / oportunidad</h3>
             <ul>
-              <li>Información crítica existe en el CDE pero <b>dispersa y poco estandarizada</b>.</li>
-              <li>Gestores usan Excel personal → <b>duplicidad</b>, baja trazabilidad y difícil consolidación semanal.</li>
-              <li>Armar antecedentes y anexos consume tiempo (búsqueda/selección) y reduce oportunidad de control.</li>
-              <li>La IA sin organización de datos falla → se requiere <b>clasificación + metadatos + evidencia</b> (data fabric).</li>
+              <li>La información para planeamiento está <b>dispersa</b> entre catastro, topografía, imágenes, DWG, modelos y presupuestos.</li>
+              <li>Las restricciones <b>ambientales, arqueológicas y de servidumbre</b> no siempre se revisan desde el inicio y aparecen tarde.</li>
+              <li>La generación de alternativas y su aterrizaje a planos/metrados consume demasiado tiempo y produce resultados <b>variables</b>.</li>
+              <li>Se requiere una forma uniforme de <b>proponer, comparar, justificar y documentar</b> alternativas antes de pasar a etapas posteriores.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">📊</span>Estado actual (baseline)</h3>
             <ul>
-              <li><b>Trabajo semanal:</b> búsqueda manual + consolidación (Excel) + armado de borradores.</li>
-              <li><b>Trazabilidad:</b> evidencias no siempre quedan referenciadas por ID/ruta/versión del CDE.</li>
-              <li><b>Riesgo:</b> inconsistencias entre gestores y dificultad para auditoría interna.</li>
+              <li><b>Entradas heterogéneas:</b> datos geoespaciales, demanda y restricciones con formatos y calidad dispareja.</li>
+              <li><b>Proceso manual:</b> identificación de alternativas, revisión de restricciones y armado de entregables se realiza con alto esfuerzo técnico.</li>
+              <li><b>Baja trazabilidad:</b> no siempre existe vínculo consistente entre alternativa evaluada, evidencia técnica, lámina y metrados.</li>
+              <li><b>Consecuencia:</b> mayor tiempo de formulación y menor comparabilidad entre opciones de diseño preliminar.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">📌</span>Alcance (IN / OUT)</h3>
-            <p><b>IN (MVP):</b> conector de lectura al CDE (metadata + contenido), catálogo documental + clasificación automática,
-              pendientes semanales exportables a Excel, plantillas estandarizadas para 4 informes (conformidades, pagos, penalidades, reporte situacional),
-              generación de borradores con <b>antecedentes</b> y <b>citas/anexos</b>, seguridad RBAC alineada al CDE + auditoría de uso.</p>
-            <p><b>OUT (MVP):</b> emisión oficial/firma/aprobación automática (solo borradores), escritura directa al CDE,
-              integración total con ERP/finanzas/legal, entrenamiento de LLM desde cero (se usa RAG + plantillas; ajuste fino opcional).</p>
+            <p><b>IN (MVP):</b> generación de <b>2 a 4 alternativas</b> de ubicación de SET por caso; generación de alternativas de trazado MT con criterios definidos;
+              cruce con restricciones <b>ambiental, arqueológica y servidumbre/propiedad</b> con <b>bandera de calidad</b>; predicción simple de demanda con series disponibles y/o indicadores proxy;
+              salida GIS + dataset/modelo BIM ligero <b>LOD2/LOI2</b>; lámina esquemática; tablas y metrados con codificación/IDs para trazabilidad en CDE.</p>
+            <p><b>OUT (MVP):</b> diseño eléctrico de detalle; planos constructivos; integración productiva con SAP/SCADA; automatización avanzada Civil 3D; presupuesto definitivo.
+              El presupuesto preliminar queda como capacidad futura habilitable.</p>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">👥</span>Interesados clave (RACI macro)</h3>
             <ul>
-              <li><b>R:</b> BIM (responsable funcional y gobierno de información).</li>
-              <li><b>A:</b> GCPPI (aprueba/acepta).</li>
-              <li><b>C:</b> TIC (seguridad, accesos, arquitectura) · Logística (insumos de procesos/soportes).</li>
-              <li><b>I:</b> GR y GG.</li>
+              <li><b>R:</b> BIM (responsable funcional, criterios de salida y alineamiento con estándares).</li>
+              <li><b>A:</b> GCPPI (aceptación funcional y validación de valor para el negocio).</li>
+              <li><b>C:</b> TIC (arquitectura, seguridad, infraestructura) · JAP/áreas técnicas (validación de casos piloto) · Logística (contratación).</li>
+              <li><b>I:</b> GG, gerencias usuarias y empresas del grupo que reutilicen la solución.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🧩</span>Supuestos y restricciones</h3>
             <ul>
-              <li><b>API:</b> extracción por lotes + incremental + cache para controlar costo/uso de API del CDE.</li>
-              <li><b>Cobertura progresiva:</b> iniciar con repositorios priorizados (Top 20%) y escalar por oleadas.</li>
-              <li><b>Citas obligatorias:</b> se bloquea respuesta/borrador sin evidencia rastreable del CDE.</li>
-              <li><b>OCR:</b> solo para documentos prioritarios (25% escaneados estimados) por costo/tiempo.</li>
+              <li>El MVP trabajará sobre <b>uno o dos casos reales piloto</b> y una unidad empresarial priorizada.</li>
+              <li>Las capas externas pueden estar <b>incompletas o desactualizadas</b>; por eso se usa semáforo o bandera de calidad.</li>
+              <li>Debe definirse desde el inicio el <b>sistema de coordenadas</b> y parámetros mínimos de IDs/LOI2 para evitar desalineaciones GIS/BIM.</li>
+              <li>TEC-08 debe alinearse con <b>TEC-4, TEC-7, PRO-4 y EST-2</b> para no duplicar formatos ni romper trazabilidad.</li>
             </ul>
           </div>
 
@@ -112,34 +113,34 @@
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🛠️</span>Solución / Enfoque (MVP)</h3>
             <ul>
-              <li><b>Indexación:</b> leer documentos del CDE (PDF/DOCX/XLSX) + metadatos; extracción incremental.</li>
-              <li><b>Data fabric mínimo:</b> catálogo con clasificación y metadatos derivados (proyecto, contrato, proveedor, semana, hito).</li>
-              <li><b>RAG + plantillas:</b> Q&A y generación de borradores con citas obligatorias (ID/ruta/versión).</li>
-              <li><b>Interfaz web:</b> chat + panel (pendientes, borradores, anexos, export Excel).</li>
-              <li><b>Seguridad:</b> RBAC alineado al CDE + auditoría de uso (quién consultó, qué fuentes se usaron).</li>
+              <li><b>Web service orquestador:</b> integra insumos geoespaciales, demanda y restricciones para correr el flujo de análisis.</li>
+              <li><b>Diagnóstico e ingesta:</b> ordena catastro, topografía, ortofotos/imágenes, datos de demanda y capas de restricciones.</li>
+              <li><b>Optimización:</b> propone ubicaciones SET y rutas MT candidatas minimizando costo técnico/territorial, no solo costo monetario.</li>
+              <li><b>Comparación:</b> entrega alternativas con métricas, ranking y justificación técnica.</li>
+              <li><b>Salida estandarizada:</b> GIS + dataset/modelo BIM ligero + lámina esquemática + metrados + links al CDE.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🧱</span>Arquitectura (alto nivel)</h3>
             <ul>
-              <li><b>Conector CDE:</b> batch + incremental + cache (cuotas + reporte de consumo).</li>
-              <li><b>Pipeline:</b> extracción → normalización → chunking → embeddings → <b>vector DB</b> + índice de metadatos.</li>
-              <li><b>Servicios:</b> API de consultas, motor de plantillas, gestor de anexos/citas, auditoría.</li>
-              <li><b>Modelos:</b> LLM vía API o self-hosted (decisión con TIC) + guardrails (bloqueo sin evidencia).</li>
+              <li><b>Sección 1:</b> ingesta y diagnóstico inicial en entorno GIS (catastro, topografía, restricciones, demanda).</li>
+              <li><b>Sección 2:</b> análisis de mercado/demanda con enfoque <b>híbrido</b> y apoyo espacial para identificar zonas prioritarias.</li>
+              <li><b>Sección 3:</b> optimización y análisis eléctrico de alternativas mediante reglas y validación técnica.</li>
+              <li><b>Sección 4–5:</b> generación de dataset/modelo BIM ligero, lámina, metrados y publicación con trazabilidad en <b>ACC</b>.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">📦</span>Entregables</h3>
             <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
-              <li>Agente IA (web): chat + panel (pendientes, borradores, anexos, export).</li>
-              <li>Conector de lectura al CDE + catálogo documental (data fabric mínimo).</li>
-              <li>Clasificación automática + metadatos derivados por reglas/ML (taxonomía mínima).</li>
-              <li>Plantillas v1 (estructura común) para: conformidades, pagos, penalidades, reporte situacional.</li>
-              <li>RAG con citas obligatorias (ID/ruta/versión) + auditoría de consultas.</li>
-              <li>Hardening: control de costos API, monitoreo/observabilidad, seguridad RBAC.</li>
-              <li>Documentación + capacitación + acta UAT + puesta en producción.</li>
+              <li><b>Mapa GIS de alternativas</b> (SET + MT) con atributos, restricciones detectadas y ranking/justificación.</li>
+              <li><b>Dataset GIS estándar + links al CDE</b> con IDs persistentes por elemento clave.</li>
+              <li><b>Modelo / dataset BIM ligero LOD2/LOI2</b> para graficación esquemática y extracción de tablas.</li>
+              <li><b>Lámina esquemática</b> alineada al estándar corporativo.</li>
+              <li><b>Tablas de planificación y metrados</b> con codificación mínima y trazabilidad.</li>
+              <li><b>Arquitectura funcional/técnica</b> y reglas mínimas del pipeline para el piloto.</li>
+              <li><b>Documentación, capacitación, UAT y publicación</b> en entorno definido.</li>
             </ol>
           </div>
 
@@ -156,43 +157,42 @@
               <tbody>
                 <tr>
                   <td><b>1</b></td>
-                  <td>Definición de alcance, criterios de aceptación, taxonomía mínima, arquitectura objetivo (con TIC).</td>
+                  <td>Definición de alcance funcional del piloto, criterios de comparación de alternativas, entradas mínimas y arquitectura objetivo.</td>
                   <td class="w-fecha">26-03-16 → 26-03-27</td>
                 </tr>
                 <tr>
                   <td><b>2</b></td>
-                  <td>Elaboración TDR (requisitos, seguridad, pruebas, operación, KPIs, criterios de éxito).</td>
+                  <td>Elaboración TDR con requisitos de ingesta, optimización, trazabilidad GIS/BIM, seguridad, pruebas y aceptación.</td>
                   <td class="w-fecha">26-03-30 → 26-04-24</td>
                 </tr>
                 <tr>
                   <td><b>3</b></td>
-                  <td>Proceso de contratación (Logística + TIC + BIM + GCPPI).</td>
+                  <td>Proceso de contratación y coordinación con TIC, BIM, Logística y áreas usuarias.</td>
                   <td class="w-fecha">26-04-27 → 26-09-25</td>
                 </tr>
                 <tr>
                   <td><b>4</b></td>
-                  <td>Recopilación de información (paralela): inventario repos, muestreo calidad, lista priorizada (Top 20%).</td>
+                  <td>Recopilación y normalización paralela de información del área piloto: catastro, topografía, demanda, restricciones y estándares de salida.</td>
                   <td class="w-fecha">26-04-27 → 26-09-25</td>
                 </tr>
                 <tr>
                   <td><b>5</b></td>
-                  <td>Ejecución contractual (MVP): accesos→indexación→plantillas→pendientes/borradores→hardening→UAT→go-live.</td>
+                  <td>Ejecución contractual del MVP: ingesta → alternativas → validación → GIS/BIM ligero → lámina/metrados → UAT → puesta en operación.</td>
                   <td class="w-fecha">26-09-28 → 26-12-11</td>
                 </tr>
               </tbody>
             </table>
             <p class="hint" style="margin-top:8px;">
-              Hitos sugeridos (ejecución): S1–2 accesos/arquitectura/taxonomía · S3–4 indexación+clasificación+plantillas v1 ·
-              S5–6 pendientes+borradores v1 con citas · S7–8 hardening/control costos API · S9–10 UAT+capacitaciones+producción.
+              Hitos sugeridos: S1–2 preparación de insumos piloto y reglas · S3–4 generación de alternativas SET/MT · S5–6 validación y ranking · S7–8 salidas GIS/BIM/lámina/metrados · S9–10 UAT, ajustes y publicación.
             </p>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🛒</span>Adquisiciones y presupuesto (MVP)</h3>
             <ul>
-              <li><b>Presupuesto asignado:</b> <b>S/. 600,000.00</b> (incluye todos los gastos del MVP).</li>
-              <li><b>Modelo de adquisición:</b> contratación de proveedor (servicio) con TDR; aceptación por pruebas de usuario.</li>
-              <li><b>Componentes:</b> conector/API CDE (uso), vector DB, servicio LLM (API o self-hosted), compute/storage/monitoreo/backups, DevOps/observabilidad.</li>
+              <li><b>Presupuesto asignado:</b> <b>S/. 600,000.00</b> (se mantiene por decisión del alcance actualizado).</li>
+              <li><b>Modelo de adquisición:</b> contratación de proveedor con TDR y aceptación por casos piloto/UAT.</li>
+              <li><b>Componentes:</b> desarrollo del web service, integración GIS/BIM/ACC, validación técnica, documentación, pruebas y despliegue.</li>
             </ul>
             <table class="tbl" style="margin-top:8px;">
               <thead>
@@ -203,31 +203,31 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Desarrollo e implementación (incl. QA/UAT)</td><td><b>65%</b></td><td><b>390,000</b></td></tr>
-                <tr><td>Ingeniería de datos + catálogo/clasificación</td><td><b>15%</b></td><td><b>90,000</b></td></tr>
-                <tr><td>Infra + seguridad + observabilidad</td><td><b>12%</b></td><td><b>72,000</b></td></tr>
-                <tr><td>Capacitación + gestión del cambio + documentación</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
-                <tr><td>Contingencia (OCR/variabilidad/ajustes)</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
+                <tr><td>Desarrollo e implementación del producto digital</td><td><b>65%</b></td><td><b>390,000</b></td></tr>
+                <tr><td>Ingeniería de datos / geodatos / normalización de insumos</td><td><b>15%</b></td><td><b>90,000</b></td></tr>
+                <tr><td>Infraestructura, seguridad, publicación y observabilidad</td><td><b>12%</b></td><td><b>72,000</b></td></tr>
+                <tr><td>Capacitación, transferencia y documentación</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
+                <tr><td>Contingencia y ajustes del piloto</td><td><b>4%</b></td><td><b>24,000</b></td></tr>
               </tbody>
             </table>
-            <p class="hint" style="margin-top:8px;">Costos recurrentes post-MVP: infra (cloud/on-prem), consumo API CDE, consumo LLM (si aplica). Se define rango mensual tras inventario.</p>
+            <p class="hint" style="margin-top:8px;">El detalle económico se mantiene como referencia A3; la distribución puede afinarse en TDR sin alterar el presupuesto total aprobado.</p>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🧑‍🤝‍🧑</span>Recursos y roles (MVP)</h3>
             <ul>
-              <li><b>Proveedor:</b> Arquitecto, Data Engineer, ML/LLM Engineer, Full-stack, QA.</li>
-              <li><b>Contraparte:</b> BIM (R) · GCPPI (A) · TIC (C) · Logística (C).</li>
-              <li><b>Usuarios piloto:</b> gestores de proyectos/contratos (validación de pendientes y borradores).</li>
+              <li><b>Proveedor:</b> arquitecto de solución, especialista GIS, desarrollador backend/full-stack, especialista BIM/automatización, QA.</li>
+              <li><b>Contraparte:</b> BIM (R) · GCPPI (A) · TIC (C) · áreas técnicas/JAP (C) · Logística (C).</li>
+              <li><b>Usuarios piloto:</b> especialistas/gestores que validen alternativas, entregables y trazabilidad.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">📣</span>Comunicaciones (cadencia + canales)</h3>
             <ul>
-              <li><b>Semanal:</b> comité operativo (BIM + Proveedor + TIC) — avances, costos API, backlog.</li>
-              <li><b>Quincenal:</b> comité de decisión (GCPPI + BIM + TIC + Logística) — desbloqueos y cambios.</li>
-              <li><b>Canales:</b> CDE (fuentes oficiales), repos Git (código/config), tablero de issues, actas y CR.</li>
+              <li><b>Semanal:</b> comité operativo BIM + proveedor + TIC para avances, incidencias y backlog del piloto.</li>
+              <li><b>Quincenal:</b> comité de decisión con GCPPI, BIM, TIC y áreas usuarias para validar criterios y salidas.</li>
+              <li><b>Canales:</b> ACC/CDE para evidencias, repositorio técnico, tablero de tareas, actas y control de cambios.</li>
             </ul>
           </div>
 
@@ -245,48 +245,40 @@
             <div class="riskrow">
               <div class="badge b-red">🔴</div>
               <div>
-                <p><b>Datos no estandarizados / dispersos</b> (Alta/Alta).</p>
-                <p class="hint">Mitigación: taxonomía mínima + clasificación automática + normalización incremental por oleadas.</p>
+                <p><b>Datos dispersos y heterogéneos</b> (Alta/Alta).</p>
+                <p class="hint">Mitigación: definir mínimo aceptable del piloto, normalización temprana e inventario de insumos.</p>
               </div>
             </div>
 
             <div class="riskrow">
               <div class="badge b-amber">🟡</div>
               <div>
-                <p><b>Costo/uso de API Autodesk</b> (Media/Alta).</p>
-                <p class="hint">Mitigación: batch + incremental + cache + cuotas + reporte de consumo; priorización por repos críticos.</p>
+                <p><b>Capas externas incompletas o desactualizadas</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: usar bandera de calidad y planificar levantamiento/procura progresiva.</p>
               </div>
             </div>
 
             <div class="riskrow">
               <div class="badge b-amber">🟡</div>
               <div>
-                <p><b>PDF escaneados</b> (OCR costoso/lento) (Media/Media).</p>
-                <p class="hint">Mitigación: OCR solo prioritarios; muestreo y reglas de selección.</p>
+                <p><b>Predicción de demanda con información limitada</b> (Media/Media).</p>
+                <p class="hint">Mitigación: aplicar método simple con supuestos explícitos y validación del área técnica/comercial.</p>
               </div>
             </div>
 
             <div class="riskrow">
               <div class="badge b-amber">🟡</div>
               <div>
-                <p><b>Alucinaciones</b> / respuestas sin sustento (Media/Alta).</p>
-                <p class="hint">Mitigación: RAG + citas obligatorias + umbral de confianza + bloqueo sin evidencia.</p>
+                <p><b>Desalineación GIS/BIM por coordenadas o IDs</b> (Media/Alta).</p>
+                <p class="hint">Mitigación: fijar sistema de referencia y parámetros mínimos desde el inicio.</p>
               </div>
             </div>
 
             <div class="riskrow">
               <div class="badge b-amber">🟡</div>
               <div>
-                <p><b>Infra on-prem vs cloud</b> (Media/Alta).</p>
-                <p class="hint">Mitigación: diseño híbrido + decisión temprana con TIC; pruebas de dimensionamiento en S1–2.</p>
-              </div>
-            </div>
-
-            <div class="riskrow">
-              <div class="badge b-amber">🟡</div>
-              <div>
-                <p><b>Baja adopción</b> (hábitos Excel) (Media/Media).</p>
-                <p class="hint">Mitigación: export Excel desde MVP + champions + quick wins (pendientes semanales).</p>
+                <p><b>Duplicidad con otros entregables del PIB</b> (Media/Media).</p>
+                <p class="hint">Mitigación: alinear entradas y salidas con TEC-4, TEC-7, PRO-4 y dependencia crítica EST-2.</p>
               </div>
             </div>
 
@@ -295,45 +287,44 @@
           <div class="sec" contenteditable="true">
             <h3><span class="ico">📈</span>Control visual (KPIs del MVP)</h3>
             <ul>
-              <li><b>KPI1 Ahorro tiempo por gestor:</b> <b>3–6 h/semana</b> (según #contratos).</li>
-              <li><b>KPI2 Calidad borradores:</b> ≥ <b>70%</b> aceptados con ≤ <b>20%</b> de edición.</li>
-              <li><b>KPI3 Relevancia pendientes:</b> ≥ <b>80%</b> validados como relevantes por usuarios piloto.</li>
-              <li><b>KPI4 Seguridad:</b> <b>0 hallazgos críticos</b> (RBAC + auditoría operativa).</li>
-              <li><b>KPI5 Control de costos API:</b> consumo dentro de cuota definida + reporte semanal de consumo.</li>
+              <li><b>KPI1 Alternativas generadas:</b> <b>2–4 alternativas</b> comparables por caso piloto.</li>
+              <li><b>KPI2 Cobertura de salida:</b> <b>100%</b> de casos piloto con GIS + BIM ligero + lámina + metrados.</li>
+              <li><b>KPI3 Tiempo de elaboración:</b> reducción medible frente al método actual en el piloto.</li>
+              <li><b>KPI4 Trazabilidad:</b> <b>100%</b> de alternativas seleccionadas con IDs y evidencia en CDE.</li>
+              <li><b>KPI5 Calidad de información:</b> capas/restricciones con bandera de calidad documentada por alternativa.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
-            <h3><span class="ico">✅</span>Plan de verificación (calidad, seguridad y costos)</h3>
+            <h3><span class="ico">✅</span>Plan de verificación (calidad, seguridad y operación)</h3>
             <ul>
-              <li><b>Calidad RAG:</b> pruebas de precisión con set de preguntas; bloqueo sin evidencia; muestreo de citas.</li>
-              <li><b>Plantillas:</b> revisión legal/contratos de estructura (solo borradores) + checklist de completitud.</li>
-              <li><b>Seguridad:</b> pruebas RBAC (equivalencia con CDE), registro de auditoría, pentest/VA según TIC.</li>
-              <li><b>Costos:</b> tablero de consumo API/LLM; alarmas; límites por repositorio/oleada.</li>
-              <li><b>UAT:</b> pilotos con gestores; registro de feedback; acta de aceptación.</li>
+              <li><b>Casos piloto:</b> ejecutar uno o dos casos reales y comparar contra el método actual.</li>
+              <li><b>Validación funcional:</b> revisar consistencia entre alternativas, ranking, restricciones y entregables finales.</li>
+              <li><b>Verificación GIS/BIM:</b> comprobar coordenadas, codificación, links al CDE y extracción de tablas/metrados.</li>
+              <li><b>Seguridad/arquitectura:</b> validar accesos, publicación y lineamientos TIC del entorno definido.</li>
+              <li><b>UAT:</b> registrar feedback de usuarios y cerrar brechas críticas antes de la puesta en operación.</li>
             </ul>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🏁</span>Criterios de aceptación (MVP)</h3>
             <ol style="margin:0; padding-left:18px; font-size:9pt; line-height:1.25;">
-              <li>Indexación operativa de repositorios priorizados (Top 20%) con extracción incremental y cache.</li>
-              <li>Catálogo documental con clasificación y metadatos derivados (proyecto/contrato/proveedor/semana/hito).</li>
-              <li>Pendientes semanales exportables a Excel por proyecto/contrato/gestor.</li>
-              <li>Generación de borradores (4 tipos) con sección <b>Antecedentes</b> + <b>citas/anexos</b> (ID/ruta/versión del CDE).</li>
-              <li>Bloqueo de respuestas sin evidencia + auditoría de uso (usuario/fecha/fuentes).</li>
-              <li>RBAC equivalente al CDE y 0 hallazgos críticos de seguridad en validación TIC.</li>
-              <li>UAT aprobado por GCPPI con KPIs mínimos alcanzados o plan de remediación aceptado.</li>
+              <li>Se generan <b>2 a 4 alternativas</b> comparables para al menos uno o dos casos reales del piloto.</li>
+              <li>Cada caso piloto entrega <b>mapa GIS + dataset/modelo BIM LOD2/LOI2 + lámina esquemática + metrados</b>.</li>
+              <li>Las alternativas quedan comparadas con <b>restricciones detectadas, ranking y justificación</b>.</li>
+              <li>Los elementos clave cuentan con <b>ID, codificación mínima y enlace al CDE</b> para trazabilidad auditable.</li>
+              <li>Se evidencia <b>reducción del tiempo</b> de elaboración respecto al proceso actual o, como mínimo, un método uniforme y verificable.</li>
+              <li>La solución queda alineada a estándares y dependencias del PIB sin generar duplicidad de formatos.</li>
             </ol>
           </div>
 
           <div class="sec" contenteditable="true">
             <h3><span class="ico">🚀</span>Mejora continua (post-MVP)</h3>
             <ul>
-              <li>Escalar cobertura por oleadas (nuevos repos/contratos) con control de costos.</li>
-              <li>Agregar escritura al CDE y firma/aprobación (fase siguiente) bajo controles de gobierno.</li>
-              <li>Integraciones (ERP/finanzas/legal) según priorización de valor y viabilidad TIC.</li>
-              <li>Optimización de OCR y reglas de selección; evaluación de modelos (API vs self-hosted).</li>
+              <li>Escalar de SET + MT a otros pipelines o tipologías según prioridad del portafolio.</li>
+              <li>Habilitar presupuesto preliminar y mayor integración con automatización BIM corporativa.</li>
+              <li>Profundizar análisis eléctrico y mayor madurez de modelos de demanda cuando existan mejores datos.</li>
+              <li>Reutilizar datasets y capas curadas en el CDE como activos corporativos para nuevos proyectos.</li>
             </ul>
           </div>
 
@@ -344,7 +335,7 @@
 
     <div class="printnote" contenteditable="true">
       <div><b>Firmas:</b> Elaboró: Coord. Corp. BIM · Revisó: TIC + Logística · Aprobó: <b>GCPPI</b></div>
-      <div><b>Control de versión:</b> v0.1 · Emisión: 2026-03-16 · Objetivo: 2026-12-11</div>
+      <div><b>Control de versión:</b> v0.2 · Emisión: 2026-03-16 · Objetivo: 2026-12-11</div>
     </div>
 
   </div>
